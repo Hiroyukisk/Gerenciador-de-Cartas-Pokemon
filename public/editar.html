@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar Carta - Cartas Pokémon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="flex min-h-screen bg-gray-100 text-gray-800">
+
+  <!-- POPUP CUSTOMIZADO -->
+  <div id="custom-popup-overlay"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
+      <p id="custom-popup-message" class="text-gray-800 text-lg"></p>
+      <div class="flex justify-center space-x-4">
+        <button id="custom-popup-ok" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sim</button>
+        <button id="custom-popup-cancel"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 hidden">Não</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU LATERAL -->
+  <aside class="w-64 bg-gray-900 text-white flex flex-col justify-between">
+    <div>
+      <div class="p-6 flex justify-center">
+        <img src="logo.png" alt="Logo" class="w-32" />
+      </div>
+      <nav class="p-6 space-y-4">
+        <a href="principal.html" class="flex items-center space-x-2 hover:text-gray-400 font-bold">
+          <span>🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="favoritas.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>⭐</span>
+          <span>Favoritas</span>
+        </a>
+        <a href="wishlist.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>🔴</span>
+          <span>Wishlist</span>
+        </a>
+        <a href="login.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>🚪</span>
+          <span>Sair</span>
+        </a>
+      </nav>
+    </div>
+    <div class="p-6">
+      <div class="bg-white text-gray-900 rounded p-4 shadow text-center">
+        <p class="text-sm">Cartas cadastradas</p>
+        <p class="text-2xl font-bold" id="contador-cartas">0</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="flex-1 flex flex-col">
+
+    <!-- CABEÇALHO -->
+    <header class="flex items-center justify-between bg-white p-4 shadow">
+      <h1 class="text-xl font-semibold">Editar carta</h1>
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <span id="nome-usuario" class="font-medium">Usuário</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 8-4 8-4s8 0 8 4" />
+          </svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- FORMULÁRIO + PREVIEW -->
+    <main class="p-6 flex flex-col md:flex-row gap-6 flex-1 w-full">
+
+      <!-- CAMPOS DO FORMULÁRIO -->
+      <div class="bg-white rounded shadow p-4 flex flex-col justify-between flex-1 space-y-4">
+        <input type="text" id="nome" placeholder="Nome da carta" class="w-full border rounded p-2 h-14" />
+        <input type="text" id="numero" placeholder="Número da carta" class="w-full border rounded p-2 h-14" />
+        <select id="set" class="w-full border rounded p-2 h-14">
+          <option value="" disabled selected>Selecione o set/coleção</option>
+        </select>
+        <input type="number" id="ano" placeholder="Ano da carta" class="w-full border rounded p-2 h-14" />
+        <input type="number" id="quantidade" placeholder="Quantidade possuída" class="w-full border rounded p-2 h-14"
+          min="0" />
+
+        <!-- RARIDADE MULTISELECT -->
+        <div class="relative w-full">
+          <button type="button" onclick="toggleDropdown('raridade')"
+            class="w-full border rounded p-2 h-14 text-left flex justify-between items-center">
+            <span id="raridade-button-text">Raridade</span>
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div id="raridade-dropdown"
+            class="absolute z-10 bg-white border rounded shadow mt-1 w-full max-h-60 overflow-y-auto hidden">
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Comum" class="mr-2">Comum</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Incomum"
+                class="mr-2">Incomum</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Rara" class="mr-2">Rara</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Holo" class="mr-2">Holo</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Rare Holo" class="mr-2">Rare
+              Holo</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Reverse Holo" class="mr-2">Reverse
+              Holo</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Ultra Rara" class="mr-2">Ultra
+              Rara</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Rare Ultra" class="mr-2">Rare
+              Ultra</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Secret Rare" class="mr-2">Secret
+              Rare</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Promo" class="mr-2">Promo</label>
+            <button type="button" onclick="confirmarSelecao('raridade')"
+              class="bg-green-600 text-white px-4 py-2 m-4 rounded w-full hover:bg-green-700">OK</button>
+          </div>
+        </div>
+
+        <!-- IDIOMA -->
+        <select id="idioma" class="w-full border rounded p-2 h-14">
+          <option value="" disabled selected>Idioma</option>
+          <option>PT</option>
+          <option>EN</option>
+          <option>JP</option>
+          <option>FR</option>
+          <option>DE</option>
+          <option>ES</option>
+          <option>IT</option>
+        </select>
+
+        <!-- TIPO MULTISELECT -->
+        <div class="relative w-full">
+          <button type="button" onclick="toggleDropdown('tipo')"
+            class="w-full border rounded p-2 h-14 text-left flex justify-between items-center">
+            <span id="tipo-button-text">Tipo da carta</span>
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div id="tipo-dropdown"
+            class="absolute z-10 bg-white border rounded shadow mt-1 w-full max-h-60 overflow-y-auto hidden">
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Normal" class="mr-2">Normal</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Foil" class="mr-2">Foil</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Reverse Foil" class="mr-2">Reverse
+              Foil</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Poké Ball Foil" class="mr-2">Poké
+              Ball Foil</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Master Ball Foil"
+                class="mr-2">Master Ball Foil</label>
+            <label class="flex items-center px-4 py-2"><input type="checkbox" value="Promo" class="mr-2">Promo</label>
+            <button type="button" onclick="confirmarSelecao('tipo')"
+              class="bg-green-600 text-white px-4 py-2 m-4 rounded w-full hover:bg-green-700">OK</button>
+          </div>
+        </div>
+
+        <textarea id="info" placeholder="Informações adicionais"
+          class="w-full border rounded p-2 flex-1 min-h-[150px]"></textarea>
+        <div class="flex space-x-2">
+          <button onclick="salvarAlteracoes()"
+            class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Salvar Alterações</button>
+          <button onclick="cancelarEdicao()"
+            class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- PREVIEW DA CARTA -->
+      <div
+        class="bg-white rounded shadow p-4 flex flex-col w-full md:w-1/3 h-[calc(100vh-5rem)] relative pb-32 overflow-auto">
+        <h2 id="nome-preview" class="font-bold mb-2 text-center w-full">Preview da carta</h2>
+        <div class="relative w-full">
+          <button id="btn-expandir" onclick="expandirArte(document.getElementById('img-preview').src)"
+            title="Expandir arte" class="absolute top-0 right-0 bg-gray-200 hover:bg-gray-300 rounded p-1 z-10 hidden"
+            aria-label="Expandir arte da carta">🔍</button>
+          <img id="img-preview" src="" alt="Preview da carta" class="w-full rounded mb-2 hidden" />
+        </div>
+      </div>
+
+      <!-- Modal para arte expandida -->
+      <div id="modal-arte-expandida" onclick="fecharModalArte()"
+        style="position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000; cursor: zoom-out;">
+        <img id="img-arte-expandida" src="" alt="Arte expandida da carta"
+          style="max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.8);" />
+      </div>
+
+    </main>
+  </div>
+
+  <script src="editar.js"></script>
+</body>
+
+</html>

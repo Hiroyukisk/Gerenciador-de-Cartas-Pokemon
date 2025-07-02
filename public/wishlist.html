@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wishlist - Cartas Pokémon</title>
+
+  <!-- POPUP CUSTOMIZADO -->
+  <div id="custom-popup-overlay"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
+      <p id="custom-popup-message" class="text-gray-800 text-lg"></p>
+      <div class="flex justify-center space-x-4">
+        <button id="custom-popup-ok" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sim</button>
+        <button id="custom-popup-cancel"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 hidden">Não</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #modal-arte-expandida {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1300;
+      cursor: zoom-out;
+    }
+
+    #modal-arte-expandida img {
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+
+    aside {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 16rem;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1000;
+      background-color: #1f2937;
+    }
+
+    .flex-1 {
+      margin-left: 16rem;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      width: calc(100% - 16rem);
+    }
+
+    .flex-1>header {
+      position: fixed;
+      top: 0;
+      left: 16rem;
+      right: 0;
+      height: 5rem;
+      /* 64px */
+      background: white;
+      z-index: 1100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #cartas-container {
+  margin-top: 7.5rem; /* antes era 4rem */
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+  height: calc(100vh - 7.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+
+    .carta-box {
+      width: 320px;
+      height: 500px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    .carta-box:hover {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .carta-box .img-wrapper {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background: #f8fafc;
+      border-bottom: 1px solid #eee;
+      padding: 12px 0;
+      box-sizing: border-box;
+    }
+
+    .carta-box .img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .expand-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #e5e7eb;
+      padding: 6px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 10;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+
+    .expand-button:hover {
+      background: #cbd5e1;
+    }
+
+    .carta-info {
+      flex: 1;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #333;
+    }
+
+    .carta-info .nome {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      color: #1f2937;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .carta-info .detalhes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-areas:
+        "quantidade raridade"
+        "ano idioma"
+        "set set";
+      gap: 8px 12px;
+      justify-items: center;
+      width: 100%;
+    }
+
+    .carta-info .detalhes span {
+      background: #f3f4f6;
+      color: #1f2937;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      min-width: 90px;
+    }
+
+    .carta-info .detalhes span.quantidade {
+      grid-area: quantidade;
+    }
+
+    .carta-info .detalhes span.raridade {
+      grid-area: raridade;
+    }
+
+    .carta-info .detalhes span.ano {
+      grid-area: ano;
+    }
+
+    .carta-info .detalhes span.idioma {
+      grid-area: idioma;
+    }
+
+    .carta-info .detalhes span.set {
+      grid-area: set;
+    }
+
+    .carta-info .detalhes span:hover {
+      background-color: #e0e7ff;
+      cursor: default;
+    }
+
+    /* checkbox estilos */
+    .carta-box input[type="checkbox"] {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      z-index: 15;
+    }
+
+    /* BOTÃO EXCLUIR SELECIONADAS FIXO ABAIXO DO HEADER E ALINHADO À ESQUERDA */
+    #btn-excluir-selecionadas {
+      position: fixed;
+      top: 3.5rem; /* antes era 4.5rem, subiu 0.5rem pra ficar mais junto */
+      left: 16rem;
+      background-color: #dc2626;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.2s ease;
+      z-index: 1150;
+      display: inline-block; /* não esconde mais */
+      font-size: 0.875rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    #btn-excluir-selecionadas:hover {
+      background-color: #b91c1c;
+    }
+
+    /* BOTÕES FININHOS DAS CARTAS */
+    .btn-fino {
+      padding: 4px 8px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      user-select: none;
+      white-space: nowrap;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-remover {
+      background-color: #dc2626;
+      color: white;
+      border: none;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5);
+    }
+
+    .btn-remover:hover {
+      background-color: #b91c1c;
+    }
+
+    .btn-dashboard {
+      background-color: #16a34a;
+      color: white;
+      border: none;
+      box-shadow: 0 2px 8px rgba(22, 163, 74, 0.5);
+    }
+
+    .btn-dashboard:hover {
+      background-color: #15803d;
+    }
+  </style>
+</head>
+
+<body class="flex min-h-screen bg-gray-100 text-gray-800 m-0 p-0">
+  <aside class="w-64 bg-gray-900 text-white flex flex-col justify-between">
+    <div>
+      <div class="p-6 flex justify-center">
+        <img src="logo.png" alt="Logo" class="w-32" />
+      </div>
+      <nav class="p-6 space-y-4">
+        <a href="principal.html" class="flex items-center space-x-2 hover:text-gray-400 font-bold">
+          <span>🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="favoritas.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>⭐</span>
+          <span>Favoritas</span>
+        </a>
+        <a href="wishlist.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>🔴</span>
+          <span>Wishlist</span>
+        </a>
+        <a href="login.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>🚪</span>
+          <span>Sair</span>
+        </a>
+      </nav>
+    </div>
+    <div class="p-6">
+      <div class="bg-white text-gray-900 rounded p-4 shadow text-center">
+        <p class="text-sm">Cartas cadastradas</p>
+        <p class="text-2xl font-bold" id="contador-cartas">0</p>
+      </div>
+    </div>
+  </aside>
+
+  <div class="flex-1 flex flex-col">
+    <header class="flex items-center justify-between bg-white p-4 shadow">
+      <h1 class="text-xl font-semibold">Wishlist</h1>
+      <div class="flex-grow flex justify-center mx-4">
+        <div class="relative w-full max-w-md">
+          <input type="text" id="busca" placeholder="Buscar cartas..."
+            class="border rounded w-full p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span id="nome-usuario" class="font-medium">Usuário</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 8-4 8-4s8 0 8 4" />
+        </svg>
+      </div>
+    </header>
+
+    <!-- Barra fixa com os botões adicionar e excluir -->
+    <div id="actions-bar" style="position: fixed; top: 4rem; left: 16rem; right: 0; height: 40px; background: white; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); z-index: 1200;">
+      <button id="btn-excluir-selecionadas" style="padding: 0 1rem; height: 32px; border-radius: 8px; font-weight: 600; font-size: 1rem; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; user-select: none; white-space: nowrap; background-color: #dc2626; color: white; box-shadow: 0 3px 6px rgba(220, 38, 38, 0.5); transition: background-color 0.3s ease;">
+        Excluir Selecionadas
+      </button>
+    </div>
+
+    <button id="btn-excluir-selecionadas" style="display:none;">Excluir Selecionadas</button>
+
+    <main id="cartas-container">
+      <!-- Exemplo de carta -->
+      <div class="carta-box">
+        <div class="img-wrapper">
+          <img src="exemplo-carta.png" alt="Carta Exemplo" />
+          <div class="expand-button" title="Expandir arte">🔍</div>
+          <input type="checkbox" />
+        </div>
+        <div class="carta-info">
+          <div class="nome">Nome da Carta</div>
+          <div class="detalhes">
+            <span class="quantidade">Qtd: 1</span>
+            <span class="raridade">Rara</span>
+            <span class="ano">2023</span>
+            <span class="idioma">PT-BR</span>
+            <span class="set">Prismatic Evolutions</span>
+          </div>
+
+          <!-- Botões fininhos aqui -->
+          <div class="flex gap-2 mt-4">
+            <button class="btn-fino btn-remover">Remover</button>
+            <button class="btn-fino btn-dashboard">Mandar pra Dashboard</button>
+          </div>
+        </div>
+      </div>
+      <!-- Fim exemplo carta -->
+    </main>
+  </div>
+
+  <div id="modal-arte-expandida" onclick="fecharModalArte()"><img id="img-arte-expandida" src=""
+      alt="Arte expandida da carta" /></div>
+
+  <script src="wishlist.js"></script>
+</body>
+
+</html>

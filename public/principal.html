@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard - Cartas Pokémon</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonte Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  #modal-arte-expandida {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1300;
+    cursor: zoom-out;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  #modal-arte-expandida.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #modal-arte-expandida img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+  }
+
+  #modal-arte-expandida.show img {
+    transform: scale(1);
+  }
+
+  aside {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 16rem;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+
+  .flex-1 {
+    margin-left: 16rem;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    width: calc(100% - 16rem);
+  }
+
+  /* Header fixo */
+  .flex-1 > header {
+    position: fixed;
+    top: 0;
+    left: 16rem;
+    right: 0;
+    height: 4rem;
+    /* 64px */
+    background: white;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Container barra de busca (centraliza a barra) */
+  .flex-1 > header > div.flex-grow {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    /* centraliza barra */
+    margin: 0 1rem;
+  }
+
+  /* Input da busca com largura controlada */
+  .flex-1 > header input#busca {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  /* Barra fixa com botões adicionar/excluir */
+  #actions-bar {
+    flex-shrink: 0;
+    background: white;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: flex-start;
+    /* alinhado à esquerda */
+    gap: 1rem;
+    position: fixed;
+    top: 4rem;
+    /* abaixo do header */
+    left: 16rem;
+    /* ao lado do aside */
+    right: 0;
+    z-index: 1200;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    height: 40px;
+    align-items: center;
+  }
+
+  /* Botões com tamanho fixo e alinhamento central */
+  #btn-adicionar,
+  #btn-excluir {
+    padding: 0 1rem;
+    height: 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    user-select: none;
+    white-space: nowrap;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  #btn-adicionar {
+    background-color: #bbf7d0;
+    /* green-200 */
+    color: #166534;
+    /* green-700 */
+    box-shadow: 0 3px 6px rgba(21, 128, 61, 0.5);
+  }
+
+  #btn-adicionar:hover {
+    background-color: #86efac;
+    /* green-300 */
+  }
+
+  #btn-adicionar span {
+    font-size: 1.3rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  #btn-excluir {
+    background-color: #dc2626;
+    /* red-600 */
+    color: white;
+    box-shadow: 0 3px 6px rgba(220, 38, 38, 0.5);
+  }
+
+  #btn-excluir:hover {
+    background-color: #b91c1c;
+    /* red-700 */
+  }
+
+  /* Container cartas - espaço extra pra header + actions-bar */
+  #cartas-container {
+    margin-top: 104px;
+    /* 64px header + 40px actions-bar */
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+    height: calc(100vh - 4rem - 40px);
+    /* desconta altura do header e da barra de ações */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .carta-box {
+    width: 320px;
+  min-height: 500px; /* permite crescer se precisar */
+  height: auto;      /* deixa a altura automática */
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    position: relative;
+  }
+
+  .carta-box:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .carta-box .img-wrapper {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    background: #f8fafc;
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+    box-sizing: border-box;
+  }
+
+  .carta-box .img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .expand-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #e5e7eb;
+    padding: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 10;
+  }
+
+  .carta-info {
+  flex: 1;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #333;
+  max-height: none;          /* removido limite de altura */
+  overflow-y: visible;       /* scroll desativado */
+  padding-bottom: 1rem;      /* espaço extra para os botões */
+}
+
+  .carta-info .nome {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .carta-info .detalhes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      "quantidade raridade"
+      "ano idioma"
+      "set set";
+    gap: 8px 12px;
+    justify-items: center;
+    width: 100%;
+  }
+
+  .carta-info .detalhes span {
+    background: #f3f4f6;
+    color: #1f2937;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-width: 90px;
+  }
+
+  .carta-info .detalhes span.quantidade {
+    grid-area: quantidade;
+  }
+
+  .carta-info .detalhes span.raridade {
+    grid-area: raridade;
+    height: 40px;           /* Altura fixa pras raridades longas */
+    display: flex;          /* Centraliza texto verticalmente */
+    align-items: center;    
+    justify-content: center;
+    text-align: center;     /* Garante centralização horizontal */
+  }
+
+  .carta-info .detalhes span.ano {
+    grid-area: ano;
+  }
+
+  .carta-info .detalhes span.idioma {
+    grid-area: idioma;
+  }
+
+  .carta-info .detalhes span.set {
+    grid-area: set;
+  }
+
+  .carta-info .detalhes span:hover {
+    background-color: #e0e7ff;
+  }
+
+  .checkbox-delete {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    z-index: 15;
+  }
+
+  @media (max-width: 720px) {
+    #cartas-container {
+      justify-content: center;
+    }
+
+    .carta-box {
+      width: 90vw;
+      height: auto;
+    }
+
+    .carta-box .img-wrapper {
+      height: 200px;
+      padding: 10px 0;
+    }
+
+    #actions-bar {
+      position: static;
+      margin-left: 0;
+      width: 100%;
+      box-shadow: none;
+      padding: 0.5rem 0;
+      flex-direction: row;
+      justify-content: center;
+      gap: 1rem;
+      height: auto;
+    }
+
+    .flex-1 {
+      margin-left: 0;
+      width: 100%;
+    }
+
+    .flex-1 > header {
+      left: 0;
+      width: 100%;
+    }
+  }
+
+  .carta-box {
+    transition: transform 0.3s ease;
+    cursor: pointer;
+  }
+
+  .carta-box:hover {
+    transform: scale(1.05);
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+</style>
+</head>
+
+<body class="flex min-h-screen bg-gray-100 text-gray-800 m-0 p-0">
+
+  <!-- POPUP CUSTOMIZADO - agora dentro do body, não mais no head! -->
+  <div id="custom-popup-overlay"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
+      <p id="custom-popup-message" class="text-gray-800 text-lg"></p>
+      <div class="flex justify-center space-x-4">
+        <button id="custom-popup-ok" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ok</button>
+        <button id="custom-popup-cancel"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 hidden">Não</button>
+      </div>
+    </div>
+  </div>
+
+  <aside class="w-64 bg-gray-900 text-white flex flex-col justify-between">
+    <div>
+      <div class="p-6 flex justify-center">
+        <img src="logo.png" alt="Logo" class="w-32" />
+      </div>
+      <nav class="p-6 space-y-4">
+        <a href="principal.html" class="flex items-center space-x-2 hover:text-gray-400 font-bold">
+          <span>🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="favoritas.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>⭐</span>
+          <span>Favoritas</span>
+        </a>
+        <a href="wishlist.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>🔴</span>
+          <span>Wishlist</span>
+        </a>
+        <a href="login.html" class="flex items-center space-x-2 hover:text-gray-400">
+          <span>🚪</span>
+          <span>Sair</span>
+        </a>
+      </nav>
+    </div>
+    <div class="p-6">
+      <div class="bg-white text-gray-900 rounded p-4 shadow text-center">
+        <p class="text-sm">Cartas cadastradas</p>
+        <p class="text-2xl font-bold" id="contador-cartas">0</p>
+      </div>
+    </div>
+  </aside>
+
+  <div class="flex-1 flex flex-col">
+    <header class="flex items-center justify-between bg-white p-4 shadow">
+      <h1 class="text-xl font-semibold">Dashboard</h1>
+      <div class="flex-grow flex justify-center mx-4">
+        <div class="relative w-full max-w-md">
+          <input type="text" id="busca" placeholder="Buscar cartas..."
+            class="border rounded w-full p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span id="nome-usuario" class="font-medium">Usuário</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 20c0-4 8-4 8-4s8 0 8 4" />
+        </svg>
+      </div>
+    </header>
+
+    </header>
+
+    <div id="actions-bar">
+      <button id="btn-adicionar" onclick="window.location.href='adicionar.html'">
+        <span>+</span> Adicionar Carta
+      </button>
+      <button id="btn-excluir" onclick="excluirSelecionadas()">
+        Excluir selecionadas
+      </button>
+    </div>
+
+    <main id="cartas-container">
+      <!-- Cartas geradas via JS -->
+    </main>
+  </div>
+
+  <div id="modal-arte-expandida" class="hidden">
+    <img id="img-arte-expandida" src="" alt="Arte Expandida" />
+  </div>
+
+  <!-- Carrega o JS no final do body pra garantir que todos os elementos já existem -->
+  <script src="principal.js"></script>
+
+</body>
+
+</html>
