@@ -1,25 +1,29 @@
-const usuarioId = localStorage.getItem('usuarioId');
+const usuarioId = localStorage.getItem('usuarioId'); // pega o ID do usuário salvo no localStorage
 
 if (!usuarioId) {
+  // se não tiver usuário logado, manda pra página de login
   window.location.href = '/login.html';
 } else {
+  // se tiver, inicia a página
   initPage();
 }
 
-let cartasCache = [];
-let cartasSelecionadas = new Set();
+let cartasCache = []; // cache das cartas pra não ficar chamando API toda hora
+let cartasSelecionadas = new Set(); // conjunto das cartas selecionadas pelo checkbox
 
 async function initPage() {
-  await buscarUsuario(usuarioId);
-  await carregarWishlist(usuarioId);
-  registrarEventos();
-  atualizarContadorWishlist(usuarioId);
-  registrarEventoBusca();
-  registrarEventoExcluirSelecionadas();
-  registrarEventoMandarSelecionadas();
+  // função principal que roda tudo quando a página inicia
+  await buscarUsuario(usuarioId); // pega info do usuário e mostra email
+  await carregarWishlist(usuarioId); // carrega as cartas da wishlist do usuário
+  registrarEventos(); // registra eventos fixos, tipo fechar modal da arte expandida
+  atualizarContadorWishlist(usuarioId); // atualiza contador que mostra quantas cartas tem
+  registrarEventoBusca(); // ativa o filtro da busca pra ir atualizando na hora
+  registrarEventoExcluirSelecionadas(); // habilita botão excluir múltiplas cartas
+  registrarEventoMandarSelecionadas(); // habilita botão pra mandar cartas pra dashboard
 }
 
 async function fetchJson(url, options = {}) {
+  // função genérica pra fazer fetch e já tratar erro, retorna JSON
   try {
     const response = await fetch(url, options);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -31,6 +35,7 @@ async function fetchJson(url, options = {}) {
 }
 
 async function buscarUsuario(id) {
+  // busca info do usuário via API e atualiza nome/email na página
   try {
     const data = await fetchJson(`/api/usuario/${id}`);
     if (data.email) {
@@ -40,34 +45,39 @@ async function buscarUsuario(id) {
 }
 
 async function carregarWishlist(usuarioId, filtro = '') {
+  // carrega as cartas da wishlist, com filtro opcional de busca por nome
   try {
     if (!cartasCache.length) {
+      // se cache vazio, busca do backend
       cartasCache = await fetchJson(`/api/cartas?usuario_id=${usuarioId}&wishlist=1`);
     }
 
     let cartasFiltradas = cartasCache;
 
     if (filtro.trim() !== '') {
+      // se tiver filtro, filtra as cartas pelo nome
       const filtroLower = filtro.toLowerCase();
       cartasFiltradas = cartasCache.filter(carta => carta.nome.toLowerCase().includes(filtroLower));
     }
 
     const container = document.getElementById('cartas-container');
-    container.innerHTML = '';
+    container.innerHTML = ''; // limpa container antes de renderizar
 
-    document.getElementById('contador-cartas').textContent = cartasFiltradas.length;
+    document.getElementById('contador-cartas').textContent = cartasFiltradas.length; // atualiza contador
 
     if (cartasFiltradas.length === 0) {
+      // se não achar cartas, mostra mensagem amigável
       container.innerHTML = '<p class="text-center text-gray-500 w-full">Nenhuma carta na wishlist.</p>';
       return;
     }
 
+    // para cada carta filtrada, cria o card com os dados e adiciona evento checkbox
     cartasFiltradas.forEach(carta => {
       const card = document.createElement('div');
       card.className = 'carta-box';
 
-      const imagemUrl = carta.url_imagem || 'pokeball.png';
-      const raridade = carta.raridade ? carta.raridade.split(',')[0].trim() : 'N/A';
+      const imagemUrl = carta.url_imagem || 'pokeball.png'; // fallback pra pokeball se não tiver imagem
+      const raridade = carta.raridade ? carta.raridade.split(',')[0].trim() : 'N/A'; // só o primeiro tipo de raridade
 
       card.innerHTML = `
         <input type="checkbox" data-id="${carta.id}" ${cartasSelecionadas.has(carta.id.toString()) ? 'checked' : ''} />
@@ -91,6 +101,7 @@ async function carregarWishlist(usuarioId, filtro = '') {
         </div>
       `;
 
+      // adiciona evento no checkbox pra adicionar/remover do set cartasSelecionadas
       const checkbox = card.querySelector('input[type="checkbox"]');
       checkbox.addEventListener('change', (e) => {
         const id = e.target.dataset.id;
@@ -99,15 +110,16 @@ async function carregarWishlist(usuarioId, filtro = '') {
         } else {
           cartasSelecionadas.delete(id.toString());
         }
-        atualizarBotaoExcluir();
+        atualizarBotaoExcluir(); // atualiza texto do botão excluir
       });
 
       container.appendChild(card);
     });
 
-    atualizarBotaoExcluir();
+    atualizarBotaoExcluir(); // atualiza botão excluir no fim
 
   } catch (e) {
+    // se der erro na requisição ou renderização, mostra mensagem de erro
     console.error('Erro ao carregar wishlist:', e);
     const container = document.getElementById('cartas-container');
     container.innerHTML = '<p class="text-center text-red-500 w-full">Erro ao carregar wishlist.</p>';
@@ -115,13 +127,15 @@ async function carregarWishlist(usuarioId, filtro = '') {
 }
 
 function atualizarBotaoExcluir() {
+  // atualiza o texto e visibilidade do botão excluir selecionadas
   const btn = document.getElementById('btn-excluir-selecionadas');
-  btn.style.display = 'inline-flex';  // sempre aparece
+  btn.style.display = 'inline-flex';  // deixa sempre visível
   const count = cartasSelecionadas.size;
   btn.textContent = count > 0 ? `Excluir Selecionadas (${count})` : 'Excluir Selecionadas';
 }
 
 function registrarEventoExcluirSelecionadas() {
+  // evento do botão excluir múltiplas cartas selecionadas
   const btn = document.getElementById('btn-excluir-selecionadas');
   btn.addEventListener('click', () => {
     if (cartasSelecionadas.size === 0) {
@@ -129,6 +143,7 @@ function registrarEventoExcluirSelecionadas() {
       return;
     }
 
+    // confirma exclusão com popup, se confirmado remove uma a uma via API
     showPopup(
       `Tem certeza que quer remover ${cartasSelecionadas.size} carta(s) da wishlist?`,
       true,
@@ -143,6 +158,7 @@ function registrarEventoExcluirSelecionadas() {
           }
 
           showPopup(`${cartasSelecionadas.size} carta(s) removida(s) da wishlist.`);
+          // remove do cache e limpa seleção
           cartasCache = cartasCache.filter(carta => !cartasSelecionadas.has(carta.id.toString()));
           cartasSelecionadas.clear();
           carregarWishlist(usuarioId, document.getElementById('busca').value);
@@ -157,6 +173,7 @@ function registrarEventoExcluirSelecionadas() {
 }
 
 function registrarEventoMandarSelecionadas() {
+  // evento do botão mandar selecionadas pra dashboard (tirar da wishlist)
   const btn = document.getElementById('btn-mandar-selecionadas');
   btn.addEventListener('click', () => {
     if (cartasSelecionadas.size === 0) {
@@ -164,12 +181,12 @@ function registrarEventoMandarSelecionadas() {
       return;
     }
 
+    // confirma e manda PATCH na API pra tirar wishlist
     showPopup(
       `Quer mesmo mover ${cartasSelecionadas.size} carta(s) selecionada(s) da wishlist para a dashboard?`,
       true,
       async () => {
         try {
-          // Faz PATCH em todas as cartas selecionadas pra wishlist: false
           for (const cartaId of cartasSelecionadas) {
             await fetchJson(`/api/cartas/${cartaId}/wishlist`, {
               method: 'PATCH',
@@ -178,7 +195,6 @@ function registrarEventoMandarSelecionadas() {
             });
           }
           showPopup(`${cartasSelecionadas.size} carta(s) movida(s) para a dashboard.`);
-          // Atualiza cache e interface
           cartasCache = cartasCache.filter(carta => !cartasSelecionadas.has(carta.id.toString()));
           cartasSelecionadas.clear();
           carregarWishlist(usuarioId, document.getElementById('busca').value);
@@ -192,8 +208,8 @@ function registrarEventoMandarSelecionadas() {
   });
 }
 
-
 function removerDaWishlist(cartaId) {
+  // remove carta individual com confirmação e chamada DELETE
   showPopup(
     'Tem certeza que quer remover essa carta da wishlist?',
     true,
@@ -218,6 +234,7 @@ function removerDaWishlist(cartaId) {
 }
 
 function moverPraDashboard(cartaId) {
+  // move carta individual pra dashboard tirando da wishlist, com confirmação e PATCH
   showPopup(
     'Quer mover essa carta da wishlist para a dashboard?',
     true,
@@ -242,6 +259,7 @@ function moverPraDashboard(cartaId) {
 }
 
 function expandirArte(src) {
+  // abre modal com a imagem da carta maior
   if (!src) {
     showPopup('Nenhuma imagem para expandir.');
     return;
@@ -249,16 +267,18 @@ function expandirArte(src) {
   const modal = document.getElementById('modal-arte-expandida');
   const img = document.getElementById('img-arte-expandida');
   img.src = src;
-  modal.style.display = 'flex';
+  modal.style.display = 'flex'; // mostra modal
 }
 
 function fecharModalArte() {
+  // fecha o modal de arte expandida e limpa imagem
   const modal = document.getElementById('modal-arte-expandida');
   modal.style.display = 'none';
   document.getElementById('img-arte-expandida').src = '';
 }
 
 function showPopup(message, hasCancel = false, onConfirm = null, onCancel = null) {
+  // mostra popup customizado, com ou sem botão cancelar
   const overlay = document.getElementById('custom-popup-overlay');
   const popupMessage = document.getElementById('custom-popup-message');
   const okButton = document.getElementById('custom-popup-ok');
@@ -281,11 +301,13 @@ function showPopup(message, hasCancel = false, onConfirm = null, onCancel = null
 }
 
 function registrarEventos() {
+  // eventos fixos que só registramos uma vez
   const modalArte = document.getElementById('modal-arte-expandida');
-  if (modalArte) modalArte.addEventListener('click', fecharModalArte);
+  if (modalArte) modalArte.addEventListener('click', fecharModalArte); // fecha modal se clicar fora da imagem
 }
 
 async function atualizarContadorWishlist(usuarioId) {
+  // atualiza contador das cartas na wishlist puxando direto do backend
   try {
     const cartasWishlist = await fetchJson(`/api/cartas?usuario_id=${usuarioId}&wishlist=1`);
     document.getElementById('contador-cartas').textContent = cartasWishlist.length || 0;
@@ -295,6 +317,7 @@ async function atualizarContadorWishlist(usuarioId) {
 }
 
 function registrarEventoBusca() {
+  // registra o evento de digitar na busca e filtra a wishlist em tempo real
   const buscaInput = document.getElementById('busca');
   buscaInput.addEventListener('input', () => {
     carregarWishlist(usuarioId, buscaInput.value);

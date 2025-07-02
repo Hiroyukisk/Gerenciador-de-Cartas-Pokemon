@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wishlist - Cartas Pokémon</title>
 
-  <!-- POPUP CUSTOMIZADO -->
+  <!-- POPUP CUSTOMIZADO: overlay que bloqueia a tela e mostra mensagens -->
   <div id="custom-popup-overlay"
     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
-      <p id="custom-popup-message" class="text-gray-800 text-lg"></p>
+      <p id="custom-popup-message" class="text-gray-800 text-lg"></p> <!-- Mensagem dinâmica do popup -->
       <div class="flex justify-center space-x-4">
         <button id="custom-popup-ok" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sim</button>
         <button id="custom-popup-cancel"
@@ -19,32 +19,32 @@
     </div>
   </div>
 
+  <!-- Tailwind CSS CDN pra facilitar o estilo -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fonte Poppins do Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    
-
+    /* Fonte e reset básico */
     body {
       font-family: 'Poppins', sans-serif;
       margin: 0;
       padding: 0;
     }
 
+    /* Modal para mostrar arte da carta ampliada */
     #modal-arte-expandida {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.8);
-      display: none;
+      display: none; /* só aparece quando ativado */
       justify-content: center;
       align-items: center;
       z-index: 1300;
-      cursor: zoom-out;
+      cursor: zoom-out; /* cursor que indica que pode clicar pra fechar */
     }
 
+    /* Imagem dentro do modal, com max tamanho e estilo */
     #modal-arte-expandida img {
       max-width: 90vw;
       max-height: 90vh;
@@ -53,6 +53,7 @@
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
     }
 
+    /* Sidebar fixa à esquerda */
     aside {
       position: fixed;
       top: 0;
@@ -61,25 +62,26 @@
       height: 100vh;
       overflow-y: auto;
       z-index: 1000;
-      background-color: #1f2937;
+      background-color: #1f2937; /* cinza escuro */
     }
 
+    /* Container principal (lado direito da sidebar) */
     .flex-1 {
-      margin-left: 16rem;
+      margin-left: 16rem; /* pra dar espaço pra sidebar */
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
-      width: calc(100% - 16rem);
+      width: calc(100% - 16rem); /* ocupar o resto da tela */
     }
 
-    .flex-1>header {
+    /* Cabeçalho fixo no topo, lado direito */
+    .flex-1 > header {
       position: fixed;
       top: 0;
       left: 16rem;
       right: 0;
-      height: 5rem;
-      /* 64px */
+      height: 5rem; /* 64px */
       background: white;
       z-index: 1100;
       display: flex;
@@ -89,9 +91,9 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
+    /* Container das cartas na página, com scroll */
     #cartas-container {
-      margin-top: 7.5rem;
-      /* antes era 4rem */
+      margin-top: 7.5rem; /* abaixo do header */
       padding: 1.5rem;
       overflow-y: auto;
       flex-grow: 1;
@@ -104,6 +106,7 @@
       width: 100%;
     }
 
+    /* Cada carta individual */
     .carta-box {
       width: 320px;
       height: 500px;
@@ -117,10 +120,12 @@
       position: relative;
     }
 
+    /* Sombra maior quando passa o mouse por cima */
     .carta-box:hover {
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
 
+    /* Container da imagem da carta */
     .carta-box .img-wrapper {
       position: relative;
       width: 100%;
@@ -131,6 +136,7 @@
       box-sizing: border-box;
     }
 
+    /* Imagem da carta preenchendo o container */
     .carta-box .img-wrapper img {
       width: 100%;
       height: 100%;
@@ -139,6 +145,7 @@
       margin: 0 auto;
     }
 
+    /* Botão pra expandir arte, fica no topo direito da imagem */
     .expand-button {
       position: absolute;
       top: 8px;
@@ -153,10 +160,12 @@
       transition: background 0.2s ease;
     }
 
+    /* Muda o fundo do botão quando passa o mouse */
     .expand-button:hover {
       background: #cbd5e1;
     }
 
+    /* Área com as infos da carta */
     .carta-info {
       flex: 1;
       padding: 12px 16px;
@@ -166,6 +175,7 @@
       color: #333;
     }
 
+    /* Nome da carta */
     .carta-info .nome {
       font-weight: 700;
       font-size: 1.1rem;
@@ -173,9 +183,10 @@
       color: #1f2937;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
+      text-overflow: ellipsis; /* corta texto grande com ... */
     }
 
+    /* Grid com detalhes tipo quantidade, raridade, ano, etc */
     .carta-info .detalhes {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -188,6 +199,7 @@
       width: 100%;
     }
 
+    /* Estilo dos spans dos detalhes */
     .carta-info .detalhes span {
       background: #f3f4f6;
       color: #1f2937;
@@ -199,32 +211,20 @@
       min-width: 90px;
     }
 
-    .carta-info .detalhes span.quantidade {
-      grid-area: quantidade;
-    }
+    /* Áreas específicas do grid */
+    .carta-info .detalhes span.quantidade { grid-area: quantidade; }
+    .carta-info .detalhes span.raridade { grid-area: raridade; }
+    .carta-info .detalhes span.ano { grid-area: ano; }
+    .carta-info .detalhes span.idioma { grid-area: idioma; }
+    .carta-info .detalhes span.set { grid-area: set; }
 
-    .carta-info .detalhes span.raridade {
-      grid-area: raridade;
-    }
-
-    .carta-info .detalhes span.ano {
-      grid-area: ano;
-    }
-
-    .carta-info .detalhes span.idioma {
-      grid-area: idioma;
-    }
-
-    .carta-info .detalhes span.set {
-      grid-area: set;
-    }
-
+    /* Hover no detalhe muda o fundo pra dar destaque */
     .carta-info .detalhes span:hover {
       background-color: #e0e7ff;
       cursor: default;
     }
 
-    /* checkbox estilos */
+    /* Checkbox pra selecionar carta pra excluir, fica no canto superior esquerdo */
     .carta-box input[type="checkbox"] {
       position: absolute;
       top: 8px;
@@ -235,7 +235,7 @@
       z-index: 15;
     }
 
-    /* BOTÃO EXCLUIR SELECIONADAS FIXO ABAIXO DO HEADER E ALINHADO À ESQUERDA */
+    /* Botão vermelho pra excluir selecionadas, fixo em cima, do lado esquerdo */
     #btn-excluir-selecionadas {
       background-color: #dc2626;
       color: white;
@@ -257,10 +257,12 @@
       margin-right: 10px;
     }
 
+    /* Hover mais escuro no botão excluir */
     #btn-excluir-selecionadas:hover {
       background-color: #b91c1c;
     }
 
+    /* Botão verde pra mandar selecionadas pra dashboard */
     #btn-mandar-selecionadas {
       background-color: #16a34a;
       color: white;
@@ -281,15 +283,16 @@
       transition: background-color 0.3s ease;
     }
 
+    /* Hover no botão mandar */
     #btn-mandar-selecionadas:hover {
       background-color: #15803d;
     }
 
-    /* Container dos botões fixos */
+    /* Container fixo dos botões adicionar/excluir no topo */
     #actions-bar {
       position: fixed;
-      top: 4rem;
-      left: 16rem;
+      top: 4rem; /* logo abaixo do header */
+      left: 16rem; /* lado da sidebar */
       right: 1rem;
       height: 40px;
       background: white;
@@ -299,55 +302,62 @@
       padding: 0 1rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       z-index: 1200;
-      overflow-x: auto;
+      overflow-x: auto; /* caso tenha muitos botões, aparece scroll horizontal */
     }
 
+    /* Botões fininhos estilo */
     .btn-fino {
-  padding: 4px 8px;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  user-select: none;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
-}
+      padding: 4px 8px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      user-select: none;
+      white-space: nowrap;
+      transition: background-color 0.2s ease;
+    }
 
-.btn-remover {
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5);
-}
+    /* Botão remover estilo vermelho */
+    .btn-remover {
+      background-color: #dc2626;
+      color: white;
+      border: none;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5);
+    }
 
-.btn-remover:hover {
-  background-color: #b91c1c;
-}
+    /* Hover botão remover */
+    .btn-remover:hover {
+      background-color: #b91c1c;
+    }
 
-.btn-dashboard {
-  background-color: #16a34a;
-  color: white;
-  border: none;
-  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.5);
-}
+    /* Botão mandar pra dashboard verde */
+    .btn-dashboard {
+      background-color: #16a34a;
+      color: white;
+      border: none;
+      box-shadow: 0 2px 8px rgba(22, 163, 74, 0.5);
+    }
 
-.btn-dashboard:hover {
-  background-color: #15803d;
-}
-
+    /* Hover botão dashboard */
+    .btn-dashboard:hover {
+      background-color: #15803d;
+    }
   </style>
 </head>
 
 <body class="flex min-h-screen bg-gray-100 text-gray-800 m-0 p-0">
+  <!-- Sidebar fixa do lado esquerdo -->
   <aside class="w-64 bg-gray-900 text-white flex flex-col justify-between">
     <div>
+      <!-- Logo centralizado -->
       <div class="p-6 flex justify-center">
         <img src="logo.png" alt="Logo" class="w-32" />
       </div>
+      <!-- Menu de navegação -->
       <nav class="p-6 space-y-4">
         <a href="principal.html" class="flex items-center space-x-2 hover:text-gray-400 font-bold">
           <span>🏠</span>
@@ -367,21 +377,27 @@
         </a>
       </nav>
     </div>
+    <!-- Box mostrando a quantidade de cartas cadastradas -->
     <div class="p-6">
       <div class="bg-white text-gray-900 rounded p-4 shadow text-center">
         <p class="text-sm">Cartas cadastradas</p>
-        <p class="text-2xl font-bold" id="contador-cartas">0</p>
+        <p class="text-2xl font-bold" id="contador-cartas">0</p> <!-- Atualizado via JS -->
       </div>
     </div>
   </aside>
 
+  <!-- Conteúdo principal ao lado da sidebar -->
   <div class="flex-1 flex flex-col">
+    <!-- Cabeçalho fixo no topo -->
     <header class="flex items-center justify-between bg-white p-4 shadow">
       <h1 class="text-xl font-semibold">Wishlist</h1>
+
+      <!-- Caixa de busca centralizada -->
       <div class="flex-grow flex justify-center mx-4">
         <div class="relative w-full max-w-md">
           <input type="text" id="busca" placeholder="Buscar cartas..."
             class="border rounded w-full p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <!-- Ícone lupa na esquerda -->
           <svg xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
             fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -390,8 +406,10 @@
           </svg>
         </div>
       </div>
+
+      <!-- Nome e ícone do usuário no topo direito -->
       <div class="flex items-center space-x-2">
-        <span id="nome-usuario" class="font-medium">Usuário</span>
+        <span id="nome-usuario" class="font-medium">Usuário</span> <!-- Atualizado via JS -->
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24"
           stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="8" r="4" />
@@ -400,7 +418,7 @@
       </div>
     </header>
 
-    <!-- Barra fixa com os botões adicionar e excluir -->
+    <!-- Barra fixa com os botões de ação logo abaixo do header -->
     <div id="actions-bar">
       <button id="btn-excluir-selecionadas">
         Excluir Selecionadas
@@ -410,10 +428,12 @@
       </button>
     </div>
 
+    <!-- Botão duplicado e escondido? Pode ser pra algum controle via JS -->
     <button id="btn-excluir-selecionadas" style="display:none;">Excluir Selecionadas</button>
 
+    <!-- Container onde as cartas da wishlist serão renderizadas via JS -->
     <main id="cartas-container">
-      <!-- Exemplo de carta -->
+      <!-- Exemplo estático de uma carta, serve de modelo e visual -->
       <div class="carta-box">
         <div class="img-wrapper">
           <img src="exemplo-carta.png" alt="Carta Exemplo" />
@@ -430,7 +450,7 @@
             <span class="set">Prismatic Evolutions</span>
           </div>
 
-          <!-- Botões fininhos aqui -->
+          <!-- Botões fininhos no rodapé da carta -->
           <div class="flex gap-2 mt-4">
             <button class="btn-fino btn-remover">Remover</button>
             <button class="btn-fino btn-dashboard">Mandar pra Dashboard</button>
@@ -441,9 +461,12 @@
     </main>
   </div>
 
-  <div id="modal-arte-expandida" onclick="fecharModalArte()"><img id="img-arte-expandida" src=""
-      alt="Arte expandida da carta" /></div>
+  <!-- Modal pra mostrar a arte da carta ampliada, fecha ao clicar fora da imagem -->
+  <div id="modal-arte-expandida" onclick="fecharModalArte()">
+    <img id="img-arte-expandida" src="" alt="Arte Expandida" />
+  </div>
 
+  <!-- Script carregado no final para garantir que DOM tá pronto -->
   <script src="wishlist.js"></script>
 </body>
 

@@ -13,11 +13,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
+    /* Define fonte padrão da página */
     body { font-family: 'Poppins', sans-serif; }
   body {
     font-family: 'Poppins', sans-serif;
   }
 
+  /* Estilos do modal para arte expandida da carta */
   #modal-arte-expandida {
     position: fixed;
     top: 0;
@@ -35,11 +37,13 @@
     transition: opacity 0.3s ease, visibility 0.3s ease;
   }
 
+  /* Mostrar modal com transição */
   #modal-arte-expandida.show {
     opacity: 1;
     visibility: visible;
   }
 
+  /* Imagem dentro do modal com tamanho máximo e efeito de zoom */
   #modal-arte-expandida img {
     max-width: 90vw;
     max-height: 90vh;
@@ -50,10 +54,12 @@
     transition: transform 0.3s ease;
   }
 
+  /* Imagem com zoom ativo ao mostrar modal */
   #modal-arte-expandida.show img {
     transform: scale(1);
   }
 
+  /* Sidebar fixa na lateral esquerda */
   aside {
     position: fixed;
     top: 0;
@@ -64,6 +70,7 @@
     z-index: 1000;
   }
 
+  /* Área principal com margem para sidebar e altura total */
   .flex-1 {
     margin-left: 16rem;
     display: flex;
@@ -73,7 +80,7 @@
     width: calc(100% - 16rem);
   }
 
-  /* Header fixo */
+  /* Header fixo no topo, ao lado da sidebar */
   .flex-1 > header {
     position: fixed;
     top: 0;
@@ -90,7 +97,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  /* Container barra de busca (centraliza a barra) */
+  /* Container para centralizar barra de busca dentro do header */
   .flex-1 > header > div.flex-grow {
     flex: 1;
     display: flex;
@@ -99,13 +106,13 @@
     margin: 0 1rem;
   }
 
-  /* Input da busca com largura controlada */
+  /* Input da barra de busca com largura máxima */
   .flex-1 > header input#busca {
     width: 100%;
     max-width: 400px;
   }
 
-  /* Barra fixa com botões adicionar/excluir */
+  /* Barra fixa com botões para adicionar e excluir cartas */
   #actions-bar {
     flex-shrink: 0;
     background: white;
@@ -126,7 +133,7 @@
     align-items: center;
   }
 
-  /* Botões com tamanho fixo e alinhamento central */
+  /* Estilos básicos para botões adicionar e excluir */
   #btn-adicionar,
   #btn-excluir {
     padding: 0 1rem;
@@ -146,6 +153,7 @@
     flex-shrink: 0;
   }
 
+  /* Estilo do botão adicionar */
   #btn-adicionar {
     background-color: #bbf7d0;
     /* green-200 */
@@ -154,17 +162,20 @@
     box-shadow: 0 3px 6px rgba(21, 128, 61, 0.5);
   }
 
+  /* Hover no botão adicionar */
   #btn-adicionar:hover {
     background-color: #86efac;
     /* green-300 */
   }
 
+  /* Ícone dentro do botão adicionar com tamanho maior */
   #btn-adicionar span {
     font-size: 1.3rem;
     font-weight: 900;
     line-height: 1;
   }
 
+  /* Estilo do botão excluir */
   #btn-excluir {
     background-color: #dc2626;
     /* red-600 */
@@ -172,12 +183,13 @@
     box-shadow: 0 3px 6px rgba(220, 38, 38, 0.5);
   }
 
+  /* Hover no botão excluir */
   #btn-excluir:hover {
     background-color: #b91c1c;
     /* red-700 */
   }
 
-  /* Container cartas - espaço extra pra header + actions-bar */
+  /* Container das cartas, com espaçamento e área rolável */
   #cartas-container {
     margin-top: 104px;
     /* 64px header + 40px actions-bar */
@@ -194,10 +206,11 @@
     width: 100%;
   }
 
+  /* Estilo da caixa de cada carta */
   .carta-box {
     width: 320px;
-  min-height: 500px; /* permite crescer se precisar */
-  height: auto;      /* deixa a altura automática */
+    min-height: 500px; /* permite crescer se precisar */
+    height: auto;      /* deixa a altura automática */
     background: white;
     border-radius: 12px;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
@@ -208,10 +221,12 @@
     position: relative;
   }
 
+  /* Sombra mais forte ao passar o mouse sobre a carta */
   .carta-box:hover {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   }
 
+  /* Container da imagem da carta */
   .carta-box .img-wrapper {
     position: relative;
     width: 100%;
@@ -222,6 +237,7 @@
     box-sizing: border-box;
   }
 
+  /* Imagem da carta ocupa todo o container e mantém proporção */
   .carta-box .img-wrapper img {
     width: 100%;
     height: 100%;
@@ -230,6 +246,7 @@
     margin: 0 auto;
   }
 
+  /* Botão de expandir arte no canto superior direito da carta */
   .expand-button {
     position: absolute;
     top: 8px;
@@ -242,18 +259,20 @@
     z-index: 10;
   }
 
+  /* Área com informações da carta */
   .carta-info {
-  flex: 1;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  color: #333;
-  max-height: none;          /* removido limite de altura */
-  overflow-y: visible;       /* scroll desativado */
-  padding-bottom: 1rem;      /* espaço extra para os botões */
-}
+    flex: 1;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #333;
+    max-height: none;          /* removido limite de altura */
+    overflow-y: visible;       /* scroll desativado */
+    padding-bottom: 1rem;      /* espaço extra para os botões */
+  }
 
+  /* Nome da carta, com texto cortado se for muito longo */
   .carta-info .nome {
     font-weight: 700;
     font-size: 1.1rem;
@@ -264,6 +283,7 @@
     text-overflow: ellipsis;
   }
 
+  /* Grid para detalhes da carta como quantidade, raridade, ano, idioma e set */
   .carta-info .detalhes {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -276,6 +296,7 @@
     width: 100%;
   }
 
+  /* Estilo base para os spans dentro dos detalhes */
   .carta-info .detalhes span {
     background: #f3f4f6;
     color: #1f2937;
@@ -287,6 +308,7 @@
     min-width: 90px;
   }
 
+  /* Áreas específicas dentro do grid para os detalhes */
   .carta-info .detalhes span.quantidade {
     grid-area: quantidade;
   }
@@ -312,10 +334,12 @@
     grid-area: set;
   }
 
+  /* Hover muda cor de fundo dos detalhes */
   .carta-info .detalhes span:hover {
     background-color: #e0e7ff;
   }
 
+  /* Checkbox para seleção de exclusão posicionado na carta */
   .checkbox-delete {
     position: absolute;
     top: 50px;
@@ -326,21 +350,26 @@
     z-index: 15;
   }
 
+  /* Responsividade para telas menores que 720px */
   @media (max-width: 720px) {
+    /* Centraliza as cartas */
     #cartas-container {
       justify-content: center;
     }
 
+    /* Carta ocupa quase toda a largura da tela */
     .carta-box {
       width: 90vw;
       height: auto;
     }
 
+    /* Ajusta altura da imagem da carta para menor */
     .carta-box .img-wrapper {
       height: 200px;
       padding: 10px 0;
     }
 
+    /* Barra de ações fixa vira estática, ocupa largura total */
     #actions-bar {
       position: static;
       margin-left: 0;
@@ -353,22 +382,26 @@
       height: auto;
     }
 
+    /* Remove margem da área principal para ocupar toda a largura */
     .flex-1 {
       margin-left: 0;
       width: 100%;
     }
 
+    /* Header ocupa toda a largura */
     .flex-1 > header {
       left: 0;
       width: 100%;
     }
   }
 
+  /* Transição e cursor para cartas com hover */
   .carta-box {
     transition: transform 0.3s ease;
     cursor: pointer;
   }
 
+  /* Carta cresce e fica em destaque ao passar mouse */
   .carta-box:hover {
     transform: scale(1.05);
     z-index: 10;
@@ -392,6 +425,7 @@
     </div>
   </div>
 
+  <!-- Sidebar lateral com navegação -->
   <aside class="w-64 bg-gray-900 text-white flex flex-col justify-between">
     <div>
       <div class="p-6 flex justify-center">
@@ -416,6 +450,7 @@
         </a>
       </nav>
     </div>
+    <!-- Contador de cartas cadastradas -->
     <div class="p-6">
       <div class="bg-white text-gray-900 rounded p-4 shadow text-center">
         <p class="text-sm">Cartas cadastradas</p>
@@ -424,9 +459,12 @@
     </div>
   </aside>
 
+  <!-- Conteúdo principal -->
   <div class="flex-1 flex flex-col">
+    <!-- Header fixo -->
     <header class="flex items-center justify-between bg-white p-4 shadow">
       <h1 class="text-xl font-semibold">Dashboard</h1>
+      <!-- Barra de busca centralizada -->
       <div class="flex-grow flex justify-center mx-4">
         <div class="relative w-full max-w-md">
           <input type="text" id="busca" placeholder="Buscar cartas..."
@@ -439,6 +477,7 @@
           </svg>
         </div>
       </div>
+      <!-- Nome do usuário com ícone -->
       <div class="flex items-center space-x-2">
         <span id="nome-usuario" class="font-medium">Usuário</span>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24"
@@ -449,8 +488,7 @@
       </div>
     </header>
 
-    </header>
-
+    <!-- Barra fixa com botões de ação -->
     <div id="actions-bar">
       <button id="btn-adicionar" onclick="window.location.href='adicionar.html'">
         <span>+</span> Adicionar Carta
@@ -460,11 +498,13 @@
       </button>
     </div>
 
+    <!-- Container onde as cartas serão renderizadas via JS -->
     <main id="cartas-container">
       <!-- Cartas geradas via JS -->
     </main>
   </div>
 
+  <!-- Modal para mostrar arte expandida da carta -->
   <div id="modal-arte-expandida" class="hidden">
     <img id="img-arte-expandida" src="" alt="Arte Expandida" />
   </div>

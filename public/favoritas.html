@@ -6,14 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Favoritas - Cartas Pokémon</title>
 
+  <!-- Tailwind CSS e fonte Poppins -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <style>
+    /* Estilos básicos e específicos da página */
     body {
       font-family: 'Poppins', sans-serif;
     }
 
+    /* Modal para mostrar a arte da carta ampliada */
     #modal-arte-expandida {
       position: fixed;
       top: 0;
@@ -21,11 +24,11 @@
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.8);
-      display: none;
+      display: none; /* Escondido por padrão */
       justify-content: center;
       align-items: center;
       z-index: 1300;
-      cursor: zoom-out;
+      cursor: zoom-out; /* Cursor para indicar clique para fechar */
     }
 
     #modal-arte-expandida img {
@@ -36,20 +39,22 @@
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
     }
 
+    /* Sidebar fixa à esquerda */
     aside {
       position: fixed;
       top: 0;
       left: 0;
-      width: 16rem;
+      width: 16rem; /* Largura da sidebar */
       height: 100vh;
       overflow-y: auto;
       z-index: 1000;
-      background-color: #1f2937;
+      background-color: #1f2937; /* Cinza escuro */
       color: white;
     }
 
+    /* Container principal à direita da sidebar */
     .flex-1 {
-      margin-left: 16rem;
+      margin-left: 16rem; /* Espaço pra sidebar */
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -57,10 +62,11 @@
       width: calc(100% - 16rem);
     }
 
+    /* Header fixo na parte superior */
     .flex-1>header {
       position: fixed;
       top: 0;
-      left: 16rem;
+      left: 16rem; /* Depois da sidebar */
       right: 0;
       height: 4rem;
       background: white;
@@ -72,12 +78,13 @@
       gap: 1rem;
     }
 
+    /* Container das cartas favoritas */
     #cartas-container {
-      margin-top: 4rem;
+      margin-top: 4rem; /* Espaço pra header fixo */
       padding: 1.5rem;
       overflow-y: auto;
       flex-grow: 1;
-      height: calc(100vh - 4rem);
+      height: calc(100vh - 4rem); /* Altura menos header */
       display: flex;
       flex-wrap: wrap;
       gap: 1.5rem;
@@ -86,6 +93,7 @@
       width: 100%;
     }
 
+    /* Cartinha individual */
     .carta-box {
       width: 320px;
       height: 500px;
@@ -99,10 +107,12 @@
       position: relative;
     }
 
+    /* Sombra mais forte ao passar mouse */
     .carta-box:hover {
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
 
+    /* Wrapper da imagem da carta */
     .img-wrapper {
       position: relative;
       width: 100%;
@@ -113,6 +123,7 @@
       box-sizing: border-box;
     }
 
+    /* Imagem da carta */
     .img-wrapper img {
       width: 100%;
       height: 100%;
@@ -121,6 +132,7 @@
       margin: 0 auto;
     }
 
+    /* Botão de expandir imagem no canto superior direito */
     .expand-button {
       position: absolute;
       top: 8px;
@@ -133,6 +145,7 @@
       z-index: 10;
     }
 
+    /* Área das infos da carta */
     .carta-info {
       flex: 1;
       padding: 12px 16px;
@@ -142,6 +155,7 @@
       color: #333;
     }
 
+    /* Nome da carta destacado */
     .nome {
       font-weight: 700;
       font-size: 1.1rem;
@@ -152,6 +166,7 @@
       text-overflow: ellipsis;
     }
 
+    /* Grid com detalhes da carta */
     .detalhes {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -164,6 +179,7 @@
       width: 100%;
     }
 
+    /* Estilos para cada detalhe */
     .detalhes span {
       background: #f3f4f6;
       color: #1f2937;
@@ -175,6 +191,7 @@
       min-width: 90px;
     }
 
+    /* Posicionamento dos detalhes no grid */
     .quantidade {
       grid-area: quantidade;
     }
@@ -195,10 +212,12 @@
       grid-area: set;
     }
 
+    /* Efeito hover nos detalhes */
     .detalhes span:hover {
       background-color: #e0e7ff;
     }
 
+    /* Responsivo pra telas menores */
     @media (max-width: 720px) {
       #cartas-container {
         justify-content: center;
@@ -219,11 +238,14 @@
 
 <body class="flex min-h-screen bg-gray-100 text-gray-800 m-0 p-0">
 
+  <!-- Sidebar lateral fixa -->
   <aside class="w-64 bg-gray-900 text-white flex flex-col justify-between">
     <div>
+      <!-- Logo no topo da sidebar -->
       <div class="p-6 flex justify-center">
         <img src="logo.png" alt="Logo" class="w-32" />
       </div>
+      <!-- Menu de navegação -->
       <nav class="p-6 space-y-4">
         <a href="principal.html" class="flex items-center space-x-2 hover:text-gray-400 font-bold">
           <span>🏠</span>
@@ -243,6 +265,7 @@
         </a>
       </nav>
     </div>
+    <!-- Contador de cartas cadastradas -->
     <div class="p-6">
       <div class="bg-white text-gray-900 rounded p-4 shadow text-center">
         <p class="text-sm">Cartas cadastradas</p>
@@ -251,10 +274,13 @@
     </div>
   </aside>
 
+  <!-- Área principal ao lado da sidebar -->
   <div class="flex-1 flex flex-col">
+    <!-- Header fixo no topo -->
     <header>
       <h1 class="text-xl font-semibold">Cartas Favoritas</h1>
 
+      <!-- Campo de busca -->
       <div class="flex-grow flex justify-center mx-4">
         <div class="relative w-full max-w-md">
           <input type="text" id="busca" placeholder="Buscar cartas favoritas..."
@@ -268,6 +294,7 @@
         </div>
       </div>
 
+      <!-- Nome do usuário logado com ícone -->
       <div class="flex items-center space-x-2">
         <span id="nome-usuario" class="font-medium">Usuário</span>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24"
@@ -278,15 +305,18 @@
       </div>
     </header>
 
+    <!-- Container das cartas que serão renderizadas via JS -->
     <main id="cartas-container">
       <!-- As cartas vão ser inseridas aqui pelo JS -->
     </main>
   </div>
 
+  <!-- Modal para mostrar a imagem da carta ampliada -->
   <div id="modal-arte-expandida" onclick="fecharModalArte()">
     <img id="img-arte-expandida" src="" alt="Arte expandida da carta" />
   </div>
 
+  <!-- Popup customizado para mensagens e confirmações -->
   <div id="custom-popup-overlay"
     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
@@ -299,6 +329,7 @@
     </div>
   </div>
 
+  <!-- JS separado da página -->
   <script src="favoritas.js"></script>
 
 </body>

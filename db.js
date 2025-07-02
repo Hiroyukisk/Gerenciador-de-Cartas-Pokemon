@@ -1,18 +1,21 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const sqlite3 = require('sqlite3').verbose(); // importa sqlite3 com suporte a logs detalhados
+const path = require('path'); // importa módulo path pra manipular caminhos
 
+// cria o caminho completo pro arquivo do banco de dados
 const db_name = path.join(__dirname, 'database', 'pokedex.db');
 
+// abre conexão com o banco de dados SQLite
 const db = new sqlite3.Database(db_name, (err) => {
   if (err) {
-    console.error('Erro ao abrir o banco de dados:', err.message);
+    console.error('Erro ao abrir o banco de dados:', err.message); // erro se não conseguir abrir
   } else {
-    console.log('Banco de dados conectado!');
+    console.log('Banco de dados conectado!'); // sucesso na conexão
   }
 });
 
+// executa as queries em série pra garantir ordem correta
 db.serialize(() => {
-  // Criar tabela de usuários
+  // cria tabela de usuários se não existir
   db.run(`
     CREATE TABLE IF NOT EXISTS usuarios (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,36 +27,36 @@ db.serialize(() => {
     )
   `);
 
+  // cria tabela de sets (coleções) com código como chave primária
   db.run(`
-  CREATE TABLE IF NOT EXISTS sets (
-    codigo TEXT PRIMARY KEY,
-    nome TEXT NOT NULL
-  )
-`);
-
-
-  // Criar tabela de cartas com wishlist já no esquema
-  db.run(`
-    CREATE TABLE IF NOT EXISTS cartas (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      usuario_id INTEGER NOT NULL,
-      nome TEXT NOT NULL,
-      numero TEXT NOT NULL,
-      "set" TEXT NOT NULL,
-      ano INTEGER,
-      quantidade INTEGER NOT NULL DEFAULT 1,
-      raridade TEXT,
-      idioma TEXT,
-      info TEXT,
-      url_imagem TEXT,
-      favorita INTEGER NOT NULL DEFAULT 0,
-      wishlist INTEGER NOT NULL DEFAULT 0,
-      FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
-      FOREIGN KEY("set") REFERENCES sets(codigo)
+    CREATE TABLE IF NOT EXISTS sets (
+      codigo TEXT PRIMARY KEY,
+      nome TEXT NOT NULL
     )
   `);
 
-  // Se a tabela já existe, garantir que tenha a coluna wishlist (não dá erro se já tiver)
+  // cria tabela de cartas, com colunas pra infos básicas + wishlist e favorita
+  db.run(`
+    CREATE TABLE IF NOT EXISTS cartas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      usuario_id INTEGER NOT NULL,           -- ID do dono da carta
+      nome TEXT NOT NULL,                    -- nome da carta
+      numero TEXT NOT NULL,                  -- número no set
+      "set" TEXT NOT NULL,                   -- código do set (chave estrangeira pra tabela sets)
+      ano INTEGER,                           -- ano de lançamento
+      quantidade INTEGER NOT NULL DEFAULT 1, -- quantidade da carta
+      raridade TEXT,                         -- raridade da carta
+      idioma TEXT,                           -- idioma da carta
+      info TEXT,                             -- info extra opcional
+      url_imagem TEXT,                       -- URL da imagem
+      favorita INTEGER NOT NULL DEFAULT 0,   -- marca como favorita (0 ou 1)
+      wishlist INTEGER NOT NULL DEFAULT 0,   -- marca como wishlist (0 ou 1)
+      FOREIGN KEY(usuario_id) REFERENCES usuarios(id),        -- vínculo com usuários
+      FOREIGN KEY("set") REFERENCES sets(codigo)              -- vínculo com sets
+    )
+  `);
+
+  // confere se a coluna wishlist existe (caso já existisse a tabela cartas sem essa coluna)
   db.get(`PRAGMA table_info(cartas);`, (err, row) => {
     if (err) {
       console.error('Erro ao verificar colunas da tabela cartas:', err.message);
@@ -66,8 +69,9 @@ db.serialize(() => {
         return;
       }
 
-      const temWishlist = columns.some(c => c.name === 'wishlist');
+      const temWishlist = columns.some(c => c.name === 'wishlist'); // procura coluna wishlist
       if (!temWishlist) {
+        // se não existir, adiciona coluna wishlist na tabela cartas
         db.run(`ALTER TABLE cartas ADD COLUMN wishlist INTEGER NOT NULL DEFAULT 0`, (err) => {
           if (err) {
             console.error('Erro ao adicionar coluna wishlist:', err.message);
@@ -80,4 +84,5 @@ db.serialize(() => {
   });
 });
 
+// exporta conexão com banco pra usar em outros arquivos
 module.exports = db;

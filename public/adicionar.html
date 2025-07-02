@@ -2,15 +2,17 @@
 <html lang="pt-br">
 
 <head>
+  <!-- Configurações básicas do documento -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Adicionar Carta - Cartas Pokémon</title>
+  <!-- Importa Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="flex min-h-screen bg-gray-100 text-gray-800">
 
-  <!-- POPUP CUSTOMIZADO -->
+  <!-- Popup customizado para mensagens de confirmação -->
   <div id="custom-popup-overlay"
     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
@@ -23,12 +25,14 @@
     </div>
   </div>
 
-  <!-- MENU LATERAL -->
+  <!-- Menu lateral fixo com navegação e contador de cartas -->
   <aside class="w-64 bg-gray-900 text-white flex flex-col justify-between">
     <div>
+      <!-- Logo no topo do menu -->
       <div class="p-6 flex justify-center">
         <img src="logo.png" alt="Logo" class="w-32" />
       </div>
+      <!-- Links de navegação -->
       <nav class="p-6 space-y-4">
         <a href="principal.html" class="flex items-center space-x-2 hover:text-gray-400 font-bold">
           <span>🏠</span>
@@ -48,6 +52,7 @@
         </a>
       </nav>
     </div>
+    <!-- Contador de cartas cadastradas -->
     <div class="p-6">
       <div class="bg-white text-gray-900 rounded p-4 shadow text-center">
         <p class="text-sm">Cartas cadastradas</p>
@@ -56,10 +61,10 @@
     </div>
   </aside>
 
-  <!-- CONTEÚDO PRINCIPAL -->
+  <!-- Área principal do conteúdo com formulário e preview -->
   <div class="flex-1 flex flex-col">
 
-    <!-- CABEÇALHO -->
+    <!-- Cabeçalho com título e usuário -->
     <header class="flex items-center justify-between bg-white p-4 shadow">
       <h1 class="text-xl font-semibold">Adicionar carta</h1>
       <div class="flex items-center space-x-4">
@@ -74,13 +79,14 @@
       </div>
     </header>
 
-    <!-- FORMULÁRIO -->
+    <!-- Formulário principal para adicionar cartas -->
     <main class="p-6 flex flex-col md:flex-row gap-6 flex-1">
 
-      <!-- CAMPOS DO FORMULÁRIO -->
+      <!-- Campos do formulário (nome, número, set, ano, etc) -->
       <div class="bg-white rounded shadow p-4 flex flex-col w-full md:w-2/3">
 
         <div class="flex flex-col space-y-4 flex-grow">
+          <!-- Campo para buscar carta pelo nome -->
           <div class="flex items-center space-x-2">
             <input type="text" id="nome" placeholder="Nome da carta" class="flex-1 border rounded p-2 h-14" />
             <button title="Buscar carta" class="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded">
@@ -92,18 +98,22 @@
             </button>
           </div>
 
+          <!-- Campo para número da carta -->
           <input type="text" id="numero" placeholder="Número da carta" class="w-full border rounded p-2 h-14" />
 
+          <!-- Dropdown para selecionar o set/coleção da carta -->
           <select id="set" class="w-full border rounded p-2 h-14">
             <option value="" disabled selected>Selecione o set/coleção</option>
           </select>
 
+          <!-- Campo para o ano da carta -->
           <input type="number" id="ano" placeholder="Ano da carta" class="w-full border rounded p-2 h-14" />
 
+          <!-- Campo para quantidade possuída -->
           <input type="number" id="quantidade" placeholder="Quantidade possuída" class="w-full border rounded p-2 h-14"
             min="0" />
 
-          <!-- RARIDADE MULTISELECT -->
+          <!-- Seletor multiseleção de raridade -->
           <div class="relative w-full">
             <button type="button" id="btn-raridade"
               class="w-full border rounded p-2 h-14 text-left flex justify-between items-center">
@@ -112,6 +122,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+            <!-- Dropdown com opções de raridade -->
             <div id="raridade-dropdown"
               class="absolute z-10 bg-white border rounded shadow mt-1 w-full max-h-60 overflow-y-auto hidden">
               <label class="flex items-center px-4 py-2"><input type="checkbox" value="Common"
@@ -135,7 +146,7 @@
             </div>
           </div>
 
-          <!-- IDIOMA -->
+          <!-- Dropdown para seleção do idioma -->
           <select id="idioma" class="w-full border rounded p-2 h-14">
             <option value="" disabled selected>Idioma</option>
             <option>PT</option>
@@ -147,7 +158,7 @@
             <option>CN</option>
           </select>
 
-          <!-- TIPO MULTISELECT -->
+          <!-- Seletor multiseleção para tipo da carta -->
           <div class="relative w-full">
             <button type="button" id="btn-tipo"
               class="w-full border rounded p-2 h-14 text-left flex justify-between items-center">
@@ -156,6 +167,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+            <!-- Dropdown com opções de tipo -->
             <div id="tipo-dropdown"
               class="absolute z-10 bg-white border rounded shadow mt-1 w-full max-h-60 overflow-y-auto hidden">
               <label class="flex items-center px-4 py-2"><input type="checkbox" value="Pokémon"
@@ -186,10 +198,12 @@
             </div>
           </div>
 
+          <!-- Campo para informações adicionais da carta -->
           <textarea id="info" placeholder="Informações adicionais"
             class="w-full border rounded p-2 flex-1 min-h-[150px]"></textarea>
         </div>
 
+        <!-- Botões para ações: salvar, adicionar à wishlist, adicionar set completo, cancelar -->
         <div class="flex flex-wrap gap-2 mt-4">
           <button onclick="salvarCarta(false)"
             class="flex-1 min-w-[150px] bg-green-600 hover:bg-green-700 text-white py-2 rounded">Salvar Carta</button>
@@ -208,7 +222,7 @@
 
       </div>
 
-      <!-- PREVIEW DA CARTA -->
+      <!-- Área de preview das cartas adicionadas -->
       <div class="bg-white rounded shadow p-4 flex flex-col w-full md:w-1/3 h-[calc(100vh-5rem)] relative pb-4">
         <h2 id="nome-preview" class="font-bold mb-2 text-center w-full">Lista de cartas</h2>
         <div class="relative w-full">
@@ -217,11 +231,12 @@
             aria-label="Expandir arte da carta">🔍</button>
           <img id="img-preview" src="" alt="" class="w-full rounded mb-2 hidden" />
         </div>
+        <!-- Container para as cartas listadas -->
         <div id="resultado-cartas" class="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
         </div>
       </div>
 
-      <!-- Modal para arte expandida -->
+      <!-- Modal para mostrar arte da carta expandida -->
       <div id="modal-arte-expandida" onclick="fecharModalArte()"
         style="position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000; cursor: zoom-out;">
         <img id="img-arte-expandida" src="" alt="Arte expandida da carta"
@@ -231,6 +246,7 @@
     </main>
   </div>
 
+  <!-- Importa o script JavaScript para a página -->
   <script src="adicionar.js"></script>
 
 </body>

@@ -1,18 +1,22 @@
+// Pega o ID do usuário salvo no localStorage
 const usuarioId = localStorage.getItem('usuarioId');
 
+// Se não tiver usuário logado, manda pra página de login
 if (!usuarioId) {
   window.location.href = '/login.html';
 } else {
-  initPage();
+  initPage(); // Se tiver, inicia a página
 }
 
+// Função que inicializa tudo ao carregar a página
 async function initPage() {
-  await buscarUsuario(usuarioId);
-  await carregarSets();
-  await atualizarContador();
-  registrarEventos();
+  await buscarUsuario(usuarioId); // Pega dados do usuário e mostra na página
+  await carregarSets();            // Carrega os sets/coleções no select
+  await atualizarContador();       // Atualiza contador de cartas do usuário
+  registrarEventos();              // Registra eventos dos botões e inputs
 }
 
+// Função genérica pra fazer fetch e já converter pra JSON com tratamento de erro
 async function fetchJson(url) {
   try {
     const response = await fetch(url);
@@ -24,6 +28,7 @@ async function fetchJson(url) {
   }
 }
 
+// Busca os dados do usuário pela API e coloca o email na tela
 async function buscarUsuario(id) {
   try {
     const data = await fetchJson(`/api/usuario/${id}`);
@@ -35,12 +40,14 @@ async function buscarUsuario(id) {
   } catch (err) {}
 }
 
+// Puxa da API os sets/coleções de cartas e popula o dropdown de seleção
 async function carregarSets() {
   try {
     const data = await fetchJson('https://api.pokemontcg.io/v2/sets');
     const selectSet = document.getElementById('set');
-    selectSet.innerHTML = '';
+    selectSet.innerHTML = ''; // Limpa opções existentes
 
+    // Opção padrão e desabilitada pra forçar escolha
     const placeholder = document.createElement('option');
     placeholder.value = '';
     placeholder.textContent = 'Selecione o set/coleção';
@@ -48,6 +55,7 @@ async function carregarSets() {
     placeholder.selected = true;
     selectSet.appendChild(placeholder);
 
+    // Cria opção pra cada set da API
     data.data.forEach(set => {
       const option = document.createElement('option');
       option.value = set.id;
@@ -59,6 +67,7 @@ async function carregarSets() {
   }
 }
 
+// Atualiza o contador de cartas normais do usuário (exclui wishlist)
 async function atualizarContador() {
   try {
     const data = await fetchJson(`/api/cartas?usuario_id=${usuarioId}&wishlist=0`);
@@ -66,7 +75,7 @@ async function atualizarContador() {
   } catch {}
 }
 
-
+// Liga os eventos dos botões e inputs da página (click, change, etc)
 function registrarEventos() {
   const btnBuscar = document.querySelector('button[title="Buscar carta"]');
   if (document.getElementById('set')) {
@@ -74,6 +83,7 @@ function registrarEventos() {
   }
   if (btnBuscar) btnBuscar.addEventListener('click', buscarCarta);
 
+  // Dropdown raridade e tipo, botões de confirmação e expandir arte
   const btnRaridade = document.getElementById('btn-raridade');
   const btnTipo = document.getElementById('btn-tipo');
   const confirmarRaridade = document.getElementById('confirmar-raridade');
@@ -89,11 +99,13 @@ function registrarEventos() {
   if (modalArte) modalArte.addEventListener('click', fecharModalArte);
 }
 
+// Abre ou fecha o dropdown (raridade ou tipo)
 function toggleDropdown(tipo) {
   const dropdown = document.getElementById(`${tipo}-dropdown`);
   if (dropdown) dropdown.classList.toggle('hidden');
 }
 
+// Confirma seleção no dropdown e atualiza o texto do botão
 function confirmarSelecao(tipo) {
   const checkboxes = document.querySelectorAll(`#${tipo}-dropdown input[type=checkbox]`);
   const selecionados = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
@@ -101,6 +113,7 @@ function confirmarSelecao(tipo) {
   document.getElementById(`${tipo}-dropdown`).classList.add('hidden');
 }
 
+// Busca cartas pela API com base no nome digitado no input
 async function buscarCarta() {
   const busca = document.getElementById('nome').value.trim();
 
@@ -127,6 +140,7 @@ async function buscarCarta() {
   }
 }
 
+// Mostra as cartas encontradas em cards clicáveis (preview)
 function renderizarCartas(cartas) {
   const container = document.getElementById('resultado-cartas');
   container.innerHTML = '';
@@ -142,11 +156,13 @@ function renderizarCartas(cartas) {
   });
 }
 
+// Mostra mensagem caso não ache carta ou outra info no resultado
 function mostrarMensagemResultado(mensagem) {
   const container = document.getElementById('resultado-cartas');
   container.innerHTML = `<p class="text-center text-gray-500">${mensagem}</p>`;
 }
 
+// Limpa o preview da carta, a lista e os botões
 function limparPreview() {
   const imgPreview = document.getElementById('img-preview');
   const btnExpandir = document.getElementById('btn-expandir');
@@ -157,6 +173,7 @@ function limparPreview() {
   document.getElementById('resultado-cartas').innerHTML = '';
 }
 
+// Quando clica numa carta da lista, preenche o formulário com os dados dela
 function selecionarCarta(carta) {
   document.getElementById('nome').value = carta.name;
   document.getElementById('numero').value = carta.number || '';
@@ -185,6 +202,7 @@ function selecionarCarta(carta) {
   document.getElementById('quantidade').focus();
 }
 
+// Salva a carta (normal ou wishlist) via API
 async function salvarCarta(isWishlist = false) {
   const raridadesSelecionadas = document.getElementById('raridade-button-text').textContent;
   const tiposSelecionados = document.getElementById('tipo-button-text').textContent;
@@ -204,6 +222,7 @@ async function salvarCarta(isWishlist = false) {
     wishlist: isWishlist ? 1 : 0
   };
 
+  // Verifica campos obrigatórios antes de enviar
   if (!dados.nome || !dados.numero || !dados.setId) {
     showPopup('Preencha os campos obrigatórios: Nome, Número e Set.');
     return;
@@ -213,6 +232,7 @@ async function salvarCarta(isWishlist = false) {
     return;
   }
 
+  // Tenta salvar via POST na API
   try {
     const res = await fetch('/api/cartas', {
       method: 'POST',
@@ -237,10 +257,7 @@ async function salvarCarta(isWishlist = false) {
   }
 }
 
-function adicionarWishlist() {
-  salvarCarta(true);
-}
-
+// Limpa o formulário, preview e reset dos dropdowns e focos
 function limparFormulario() {
   ['nome', 'numero', 'set', 'ano', 'quantidade', 'info'].forEach(id => {
     document.getElementById(id).value = '';
@@ -251,20 +268,21 @@ function limparFormulario() {
   document.getElementById('btn-expandir').classList.add('hidden');
   document.getElementById('raridade-button-text').textContent = 'Raridade';
   document.getElementById('tipo-button-text').textContent = 'Tipo da carta';
-  // Limpa checkboxes do dropdown de raridade
+
+  // Limpa checkboxes dos dropdowns
   document.querySelectorAll('#raridade-dropdown input[type=checkbox]').forEach(cb => cb.checked = false);
-  // Limpa checkboxes do dropdown de tipo
   document.querySelectorAll('#tipo-dropdown input[type=checkbox]').forEach(cb => cb.checked = false);
   document.getElementById('nome').focus();
 }
 
-
+// Confirma se quer cancelar edição e volta pra página principal
 function cancelarEdicao() {
   showPopup('Deseja cancelar a edição? As alterações não serão salvas.', true,
     () => window.location.href = '/principal.html'
   );
 }
 
+// Abre modal com a arte da carta em tamanho maior
 function expandirArte(src) {
   if (!src) {
     showPopup('Nenhuma imagem para expandir.');
@@ -276,12 +294,14 @@ function expandirArte(src) {
   modal.style.display = 'flex';
 }
 
+// Fecha o modal da arte expandida
 function fecharModalArte() {
   const modal = document.getElementById('modal-arte-expandida');
   modal.style.display = 'none';
   document.getElementById('img-arte-expandida').src = '';
 }
 
+// Mostra popup com mensagem, pode ter botão cancelar, e funções onConfirm/onCancel
 function showPopup(message, hasCancel = false, onConfirm = null, onCancel = null) {
   const overlay = document.getElementById('custom-popup-overlay');
   const popupMessage = document.getElementById('custom-popup-message');
@@ -298,6 +318,7 @@ function showPopup(message, hasCancel = false, onConfirm = null, onCancel = null
   cancelButton.onclick = () => { closePopup(); if (onCancel) onCancel(); };
 }
 
+// Pede confirmação antes de adicionar todas as cartas do set à coleção
 async function adicionarSetCompleto() {
   const setId = document.getElementById('set').value;
   if (!setId) {
@@ -313,7 +334,7 @@ async function adicionarSetCompleto() {
   );
 }
 
-
+// Igual o outro, mas para adicionar o set completo na wishlist
 async function adicionarSetCompletoWishlist() {
   const setId = document.getElementById('set').value;
   if (!setId) {
@@ -329,6 +350,7 @@ async function adicionarSetCompletoWishlist() {
   );
 }
 
+// Busca cartas do set na API e adiciona todas (com confirmação opcional)
 async function adicionarSet(confirmar = true, isWishlist = false) {
   const setId = document.getElementById('set').value;
   if (!setId) {
@@ -355,6 +377,7 @@ async function adicionarSet(confirmar = true, isWishlist = false) {
   }
 }
 
+// Salva as cartas do set uma a uma na API, conta sucesso e falhas, mostra resumo
 async function salvarCartasDoSet(cartas, isWishlist = false) {
   let sucesso = 0, falha = 0;
 
@@ -396,6 +419,7 @@ async function salvarCartasDoSet(cartas, isWishlist = false) {
   atualizarContador();
 }
 
+// Busca cartas de um set selecionado e mostra na tela
 async function buscarCartasPorSet() {
   const setId = document.getElementById('set').value;
   if (!setId) {

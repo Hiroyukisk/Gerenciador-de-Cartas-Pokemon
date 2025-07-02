@@ -1,4 +1,4 @@
-// Cria a animação fadeSlideIn para as cartas
+// Cria a animação fadeSlideIn para as cartas (fade + descer)
 const styleSheet = document.createElement("style");
 styleSheet.type = "text/css";
 styleSheet.innerText = `
@@ -15,20 +15,26 @@ styleSheet.innerText = `
 `;
 document.head.appendChild(styleSheet);
 
+// Pega o ID do usuário no localStorage
 const usuarioId = localStorage.getItem('usuarioId');
+
+// Se não tem usuário, manda pro login
 if (!usuarioId) {
   window.location.href = '/login.html';
 } else {
+  // Se tem, busca os dados do usuário e carrega as cartas dele
   buscarUsuario(usuarioId);
   carregarCartas(usuarioId);
 }
 
+// Busca os dados do usuário pela API e atualiza o nome na tela
 async function buscarUsuario(id) {
   try {
     const res = await fetch(`/api/usuario/${id}`);
     if (!res.ok) throw new Error('Erro na resposta da API');
     const data = await res.json();
     if (data.email) {
+      // Atualiza o nome do usuário no header
       document.getElementById('nome-usuario').textContent = data.email;
     } else {
       console.error('Usuário não encontrado');
@@ -38,20 +44,23 @@ async function buscarUsuario(id) {
   }
 }
 
+// Busca as cartas do usuário (que não estão na wishlist) e mostra na tela
 async function carregarCartas(usuarioId) {
   try {
     const res = await fetch(`/api/cartas?usuario_id=${usuarioId}&wishlist=0`);
     if (!res.ok) throw new Error('Erro na resposta da API cartas');
     const cartas = await res.json();
 
+    // Atualiza o contador de cartas no sidebar
     document.getElementById('contador-cartas').textContent = cartas.length;
 
+    // Pega o container das cartas e limpa tudo que tinha antes
     const container = document.getElementById('cartas-container');
-    container.innerHTML = ''; // limpa cartas antigas
+    container.innerHTML = '';
 
     const acoesDiv = document.getElementById('acoes-cartas');
 
-    // Cria botao adicionar, se nao existir
+    // Cria botão "Adicionar Carta" se não existir (mas na verdade no HTML já tem)
     if (!document.getElementById('btn-adicionar')) {
       const btnAdicionar = document.createElement('div');
       btnAdicionar.id = 'btn-adicionar';
@@ -66,7 +75,7 @@ async function carregarCartas(usuarioId) {
       acoesDiv.appendChild(btnAdicionar);
     }
 
-    // Cria botao excluir selecionadas, se nao existir
+    // Cria botão "Excluir selecionadas" se não existir
     if (!document.getElementById('btn-excluir')) {
       const btnExcluir = document.createElement('button');
       btnExcluir.id = 'btn-excluir';
@@ -80,7 +89,7 @@ async function carregarCartas(usuarioId) {
       acoesDiv.appendChild(btnExcluir);
     }
 
-    // Renderiza as cartas
+    // Pra cada carta, cria o HTML dela e adiciona no container
     cartas.forEach(carta => {
       const cardDiv = document.createElement('div');
       cardDiv.className = 'carta-box';
@@ -119,13 +128,14 @@ async function carregarCartas(usuarioId) {
       container.appendChild(cardDiv);
     });
 
-    // Animação
+    // Anima as cartas (fade + slide)
     animarCartas();
 
-    // Reaplica filtro depois de carregar cartas
+    // Aplica o filtro da busca (se tiver algo digitado)
     aplicarFiltroCartas();
 
   } catch (e) {
+    // Se deu erro, mostra mensagem vermelha no container
     console.error('Erro ao carregar cartas:', e);
     document.getElementById('cartas-container').innerHTML = `
       <div class="col-span-full text-center text-red-500">
@@ -135,13 +145,17 @@ async function carregarCartas(usuarioId) {
   }
 }
 
+// Exclui todas as cartas que estiverem selecionadas (checkbox marcado)
 async function excluirSelecionadas() {
   const checkboxes = document.querySelectorAll('.delete-checkbox:checked');
+
   if (checkboxes.length === 0) {
+    // Se não selecionou nada, avisa e para
     showPopup('Nenhuma carta selecionada para exclusão.');
     return;
   }
 
+  // Confirma antes de excluir
   showPopup(`Tem certeza que quer excluir ${checkboxes.length} cartas?`, true, async () => {
     let sucesso = 0, falha = 0;
 
@@ -149,6 +163,7 @@ async function excluirSelecionadas() {
       const cartaId = cb.dataset.cartaId;
 
       try {
+        // Verifica se a carta é favorita, se for, não exclui
         const res = await fetch(`/api/carta/${cartaId}`);
         if (!res.ok) throw new Error('Erro ao buscar carta');
 
@@ -159,6 +174,7 @@ async function excluirSelecionadas() {
           continue;
         }
 
+        // Exclui a carta pela API
         const delRes = await fetch(`/api/cartas/${cartaId}`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
@@ -172,11 +188,14 @@ async function excluirSelecionadas() {
       }
     }
 
+    // Mostra o resultado final da exclusão
     showPopup(`Exclusão finalizada: ${sucesso} excluídas, ${falha} não excluídas.`);
+    // Recarrega as cartas pra atualizar a lista
     carregarCartas(usuarioId);
   });
 }
 
+// Confirma exclusão de uma carta só (quando clica no botão ❌)
 async function confirmarExcluirCarta(cartaId) {
   try {
     const res = await fetch(`/api/carta/${cartaId}`);
@@ -185,10 +204,12 @@ async function confirmarExcluirCarta(cartaId) {
     const carta = await res.json();
 
     if (carta.favorita === 1) {
+      // Carta favorita não pode ser excluída
       showPopup('Essa carta está marcada como favorita e não pode ser excluída.', false);
       return;
     }
 
+    // Confirma exclusão com popup
     showPopup('Quer mesmo excluir essa carta?', true, () => excluirCarta(cartaId));
   } catch (e) {
     console.error('Erro ao verificar carta favorita:', e);
@@ -196,6 +217,7 @@ async function confirmarExcluirCarta(cartaId) {
   }
 }
 
+// Exclui a carta específica
 async function excluirCarta(cartaId) {
   try {
     const res = await fetch(`/api/cartas/${cartaId}`, {
@@ -211,10 +233,12 @@ async function excluirCarta(cartaId) {
   }
 }
 
+// Vai pra página de edição da carta
 function editarCarta(cartaId) {
   window.location.href = `editar.html?id=${cartaId}`;
 }
 
+// Aplica filtro de busca nas cartas mostrando só as que batem com o texto digitado
 function aplicarFiltroCartas() {
   const filtro = buscaInput?.value?.toLowerCase() || '';
   const cartas = document.querySelectorAll('#cartas-container > div.carta-box');
@@ -224,11 +248,13 @@ function aplicarFiltroCartas() {
   });
 }
 
+// Pega input da busca e adiciona evento para filtrar enquanto digita
 const buscaInput = document.getElementById('busca');
 if (buscaInput) {
   buscaInput.addEventListener('input', aplicarFiltroCartas);
 }
 
+// Abre modal pra mostrar arte da carta maior
 function expandirArte(src) {
   const modal = document.getElementById('modal-arte-expandida');
   const img = document.getElementById('img-arte-expandida');
@@ -236,6 +262,7 @@ function expandirArte(src) {
   modal.classList.add('show');
 }
 
+// Fecha modal da arte expandida
 function fecharModalArte() {
   const modal = document.getElementById('modal-arte-expandida');
   modal.classList.remove('show');
@@ -246,6 +273,7 @@ function fecharModalArte() {
   }, { once: true });
 }
 
+// Popup customizado com mensagem, botão ok, e opcional botão cancelar
 function showPopup(message, hasCancel = false, onConfirm = null, onCancel = null) {
   const overlay = document.getElementById('custom-popup-overlay');
   const popupMessage = document.getElementById('custom-popup-message');
@@ -269,6 +297,7 @@ function showPopup(message, hasCancel = false, onConfirm = null, onCancel = null
   };
 }
 
+// Quando clica no link sair, mostra popup confirmando saída
 const linkSair = document.querySelector('aside nav a[href="login.html"]');
 if (linkSair) {
   linkSair.addEventListener('click', e => {
@@ -284,6 +313,7 @@ if (linkSair) {
   });
 }
 
+// Alterna o status de favorita (liga/desliga) da carta, chama API e atualiza botão
 async function toggleFavorita(cartaId, atualFavorita) {
   const novaFavorita = atualFavorita == 1 ? 0 : 1;
 
@@ -295,7 +325,7 @@ async function toggleFavorita(cartaId, atualFavorita) {
     });
     if (!res.ok) throw new Error('Falha ao atualizar favorita');
 
-    // Atualiza só o card da carta no DOM, sem recarregar tudo
+    // Atualiza só o botão da carta no DOM sem recarregar tudo
     atualizarCartaFavoritaNoDOM(cartaId, novaFavorita);
 
   } catch (e) {
@@ -304,38 +334,32 @@ async function toggleFavorita(cartaId, atualFavorita) {
   }
 }
 
-// Função que atualiza só o botão favorita na carta no DOM
+// Atualiza o botão estrela da carta no DOM sem recarregar a lista toda
 function atualizarCartaFavoritaNoDOM(cartaId, novaFavorita) {
-  // Encontra o card no container
   const container = document.getElementById('cartas-container');
-  // Os cards não têm ID, mas tem checkbox com data-carta-id, pega o pai (card)
   const checkbox = container.querySelector(`.delete-checkbox[data-carta-id="${cartaId}"]`);
-  if (!checkbox) return; // se não achou, para aqui
+  if (!checkbox) return;
 
   const cardDiv = checkbox.closest('.carta-box');
   if (!cardDiv) return;
 
-  // Atualiza o botão da estrela, que fica na div .img-wrapper > button
   const btnFavorita = cardDiv.querySelector('.img-wrapper > button');
   if (!btnFavorita) return;
 
-  // Atualiza o texto da estrela
   btnFavorita.textContent = novaFavorita === 1 ? '⭐' : '☆';
-
-  // Atualiza o onclick do botão pra ter o novo estado correto (pra próxima troca)
   btnFavorita.setAttribute('onclick', `toggleFavorita(${cartaId}, ${novaFavorita})`);
 }
 
+// Anima as cartas aparecendo com fade e deslizando pra cima
 function animarCartas() {
   const cartas = document.querySelectorAll('#cartas-container .carta-box');
   cartas.forEach((carta) => {
     carta.style.opacity = 0;
     carta.style.animation = `fadeSlideIn 0.6s ease forwards`;
-    // removido animationDelay
   });
 }
 
-
+// Fecha modal ao clicar fora da imagem (clicar no fundo)
 const modal = document.getElementById('modal-arte-expandida');
 modal.addEventListener('click', e => {
   if (e.target === modal) {

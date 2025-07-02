@@ -5,10 +5,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login / Cadastro - Gerenciador de Cartas Pokémon</title>
+  <!-- Importa Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<!-- POPUP CUSTOMIZADO -->
+<!-- POPUP CUSTOMIZADO PARA MENSAGENS -->
 <div id="custom-popup-overlay"
   class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
@@ -23,16 +24,16 @@
 
 <body class="h-screen w-screen flex bg-white">
 
-  <!-- LADO ESQUERDO COM GRADIENTE E LOGO -->
+  <!-- LADO ESQUERDO: GRADIENTE E LOGO, só aparece em telas médias pra cima -->
   <div class="hidden md:flex w-1/2 items-center justify-center bg-neutral-800">
     <img src="logo.png" alt="Logo" class="w-1/2 object-contain" />
   </div>
 
-  <!-- LADO DIREITO COM LOGIN, CADASTRO E ALTERAR SENHA -->
+  <!-- LADO DIREITO: FORMULÁRIOS DE LOGIN, CADASTRO E ALTERAR SENHA -->
   <div class="flex flex-col w-full md:w-1/2 items-center justify-center bg-white p-8 overflow-auto">
     <div class="w-4/5 max-w-md">
 
-      <!-- TOGGLE DE FORMULÁRIOS -->
+      <!-- BOTOES PRA TROCAR ENTRE OS FORMULÁRIOS -->
       <div class="flex justify-center mb-8 space-x-8">
         <button id="btn-login" class="text-xl font-bold border-b-4 border-blue-600 pb-1">
           Login
@@ -45,7 +46,7 @@
         </button>
       </div>
 
-      <!-- FORMULÁRIO LOGIN -->
+      <!-- FORMULÁRIO DE LOGIN -->
       <form id="form-login" class="space-y-6">
         <label class="block text-gray-700">Email</label>
         <input id="emailLogin" type="email" placeholder="Seu email"
@@ -60,7 +61,7 @@
         </button>
       </form>
 
-      <!-- FORMULÁRIO CADASTRO -->
+      <!-- FORMULÁRIO DE CADASTRO (inicialmente escondido) -->
       <form id="form-cadastro" class="space-y-6 hidden">
         <label class="block text-gray-700">Nome</label>
         <input id="nomeCadastro" type="text" placeholder="Seu nome"
@@ -98,7 +99,7 @@
         </button>
       </form>
 
-      <!-- FORMULÁRIO ALTERAR SENHA -->
+      <!-- FORMULÁRIO DE ALTERAR SENHA (inicialmente escondido) -->
       <form id="form-alterar-senha" class="space-y-6 hidden">
         <label class="block text-gray-700">Senha Atual</label>
         <input id="senhaAtualAlterar" type="password" placeholder="Sua senha atual"
@@ -123,6 +124,7 @@
     </div>
   </div>
 
+  <!-- Importa o script JS que controla o login, cadastro e troca de formulários -->
   <script src="login.js"></script>
 </body>
 

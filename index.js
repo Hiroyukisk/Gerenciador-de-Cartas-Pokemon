@@ -1,24 +1,31 @@
 const express = require('express');
 const app = express();
 const PORT = 3000;
-const db = require('./db');
-const bcrypt = require('bcrypt');
+const db = require('./db'); // importa conexão com o banco
+const bcrypt = require('bcrypt'); // importa bcrypt pra hashear senhas
 const path = require('path');
-const cors = require('cors');
+const cors = require('cors'); // importa cors pra permitir requisições de outras origens
 
+// Configura CORS pra permitir apenas acessos locais
 app.use(cors({
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type']
 }));
 
+// Serve arquivos estáticos da pasta public
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Habilita parsing de JSON no body das requisições
 app.use(express.json());
 
-// Cadastro
+// =====================
+// CADASTRO DE USUÁRIO
+// =====================
 app.post('/api/cadastro', async (req, res) => {
   const { nome, sobrenome, data_nascimento, email, email_confirmacao, senha, senha_confirmacao } = req.body;
 
+  // Validação básica dos campos
   if (!nome || !sobrenome || !data_nascimento || !email || !email_confirmacao || !senha || !senha_confirmacao) {
     return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
   }
@@ -30,7 +37,7 @@ app.post('/api/cadastro', async (req, res) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(senha, 10);
+    const hashedPassword = await bcrypt.hash(senha, 10); // gera hash da senha
     const query = `INSERT INTO usuarios (nome, sobrenome, data_nascimento, email, senha) VALUES (?, ?, ?, ?, ?)`;
     db.run(query, [nome, sobrenome, data_nascimento, email, hashedPassword], function (err) {
       if (err) {
@@ -45,7 +52,9 @@ app.post('/api/cadastro', async (req, res) => {
   }
 });
 
-// Login
+// =====================
+// LOGIN
+// =====================
 app.post('/api/login', (req, res) => {
   const { email, senha } = req.body;
   if (!email || !senha) {
@@ -60,7 +69,7 @@ app.post('/api/login', (req, res) => {
     if (!row) {
       return res.status(401).json({ message: 'Usuário não encontrado.' });
     }
-    const senhaCorreta = await bcrypt.compare(senha, row.senha);
+    const senhaCorreta = await bcrypt.compare(senha, row.senha); // compara senha digitada com hash no banco
     if (!senhaCorreta) {
       return res.status(401).json({ message: 'Senha incorreta.' });
     }
@@ -68,7 +77,9 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Buscar dados do usuário
+// =====================
+// BUSCAR DADOS DO USUÁRIO
+// =====================
 app.get('/api/usuario/:id', (req, res) => {
   const usuarioId = req.params.id;
   const query = 'SELECT email FROM usuarios WHERE id = ?';
@@ -84,7 +95,9 @@ app.get('/api/usuario/:id', (req, res) => {
   });
 });
 
-// Alterar senha
+// =====================
+// ALTERAR SENHA
+// =====================
 app.put('/api/alterar-senha', async (req, res) => {
   const { usuario_id, senha_atual, nova_senha, nova_senha_confirmacao } = req.body;
 
@@ -108,13 +121,13 @@ app.put('/api/alterar-senha', async (req, res) => {
       return res.status(404).json({ message: 'Usuário não encontrado.' });
     }
 
-    const senhaCorreta = await bcrypt.compare(senha_atual, row.senha);
+    const senhaCorreta = await bcrypt.compare(senha_atual, row.senha); // compara senha atual
     if (!senhaCorreta) {
       return res.status(401).json({ message: 'Senha atual incorreta.' });
     }
 
     try {
-      const hashNovaSenha = await bcrypt.hash(nova_senha, 10);
+      const hashNovaSenha = await bcrypt.hash(nova_senha, 10); // gera hash da nova senha
       const updateQuery = 'UPDATE usuarios SET senha = ? WHERE id = ?';
       db.run(updateQuery, [hashNovaSenha, usuario_id], function (updateErr) {
         if (updateErr) {
@@ -130,13 +143,14 @@ app.put('/api/alterar-senha', async (req, res) => {
   });
 });
 
-// Adicionar carta (ATUALIZADO pra salvar wishlist)
+// =====================
+// ADICIONAR CARTA
+// =====================
 app.post('/api/cartas', (req, res) => {
   const { usuario_id, nome, numero, setId, ano, quantidade, raridade, idioma, info, url_imagem, wishlist } = req.body;
 
-  const wishlistInt = wishlist === true || wishlist === 1 ? 1 : 0;
+  const wishlistInt = wishlist === true || wishlist === 1 ? 1 : 0; // transforma bool pra inteiro 0 ou 1
 
-  // Se for wishlist, quantidade pode ser zero ou nulo
   if (!usuario_id || !nome || !numero || !setId) {
     return res.status(400).json({ success: false, message: 'Campos obrigatórios: nome, número e set.' });
   }
@@ -158,8 +172,9 @@ app.post('/api/cartas', (req, res) => {
   });
 });
 
-
-// Buscar carta específica
+// =====================
+// BUSCAR CARTA ESPECÍFICA
+// =====================
 app.get('/api/carta/:id', (req, res) => {
   const cartaId = req.params.id;
   const query = 'SELECT * FROM cartas WHERE id = ?';
@@ -175,7 +190,9 @@ app.get('/api/carta/:id', (req, res) => {
   });
 });
 
-// Editar carta
+// =====================
+// EDITAR CARTA
+// =====================
 app.put('/api/cartas/:cartaId', (req, res) => {
   const cartaId = req.params.cartaId;
   const { usuario_id, nome, numero, setId, ano, quantidade, raridade, idioma, info, url_imagem } = req.body;
@@ -201,7 +218,9 @@ app.put('/api/cartas/:cartaId', (req, res) => {
   });
 });
 
-// Excluir carta
+// =====================
+// EXCLUIR CARTA
+// =====================
 app.delete('/api/cartas/:cartaId', (req, res) => {
   const cartaId = req.params.cartaId;
   const { usuario_id } = req.body;
@@ -221,7 +240,9 @@ app.delete('/api/cartas/:cartaId', (req, res) => {
   });
 });
 
-// Atualizar favorita
+// =====================
+// ATUALIZAR FAVORITA
+// =====================
 app.patch('/api/cartas/:cartaId/favorita', (req, res) => {
   const cartaId = req.params.cartaId;
   const { usuario_id, favorita } = req.body;
@@ -248,7 +269,9 @@ app.patch('/api/cartas/:cartaId/favorita', (req, res) => {
   });
 });
 
-// Atualizar wishlist
+// =====================
+// ATUALIZAR WISHLIST
+// =====================
 app.patch('/api/cartas/:cartaId/wishlist', (req, res) => {
   const cartaId = req.params.cartaId;
   const { usuario_id, wishlist } = req.body;
@@ -275,7 +298,9 @@ app.patch('/api/cartas/:cartaId/wishlist', (req, res) => {
   });
 });
 
-// GET cartas com filtro favorita/wishlist
+// =====================
+// BUSCAR CARTAS COM FILTROS
+// =====================
 app.get('/api/cartas', (req, res) => {
   const usuarioId = req.query.usuario_id;
   const favorita = req.query.favorita;
@@ -309,12 +334,16 @@ app.get('/api/cartas', (req, res) => {
   });
 });
 
-// Endpoint de teste
+// =====================
+// ENDPOINT DE TESTE
+// =====================
 app.get('/', (req, res) => {
   res.send('Servidor do Gerenciador de Cartas Pokémon funcionando!');
 });
 
-// Endpoint pra importar sets em massa (array de {codigo, nome})
+// =====================
+// IMPORTAR SETS EM MASSA
+// =====================
 app.post('/api/sets/importar', (req, res) => {
   const sets = req.body.sets;
 
@@ -338,7 +367,9 @@ app.post('/api/sets/importar', (req, res) => {
   });
 });
 
-
+// =====================
+// INICIA SERVIDOR
+// =====================
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
