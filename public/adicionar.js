@@ -245,13 +245,19 @@ function limparFormulario() {
   ['nome', 'numero', 'set', 'ano', 'quantidade', 'info'].forEach(id => {
     document.getElementById(id).value = '';
   });
+
   document.getElementById('img-preview').src = '';
   document.getElementById('img-preview').classList.add('hidden');
   document.getElementById('btn-expandir').classList.add('hidden');
   document.getElementById('raridade-button-text').textContent = 'Raridade';
   document.getElementById('tipo-button-text').textContent = 'Tipo da carta';
+  // Limpa checkboxes do dropdown de raridade
+  document.querySelectorAll('#raridade-dropdown input[type=checkbox]').forEach(cb => cb.checked = false);
+  // Limpa checkboxes do dropdown de tipo
+  document.querySelectorAll('#tipo-dropdown input[type=checkbox]').forEach(cb => cb.checked = false);
   document.getElementById('nome').focus();
 }
+
 
 function cancelarEdicao() {
   showPopup('Deseja cancelar a edição? As alterações não serão salvas.', true,
@@ -293,11 +299,34 @@ function showPopup(message, hasCancel = false, onConfirm = null, onCancel = null
 }
 
 async function adicionarSetCompleto() {
-  await adicionarSet(true);
+  const setId = document.getElementById('set').value;
+  if (!setId) {
+    showPopup('Selecione um set antes de adicionar.');
+    return;
+  }
+
+  showPopup(
+    'Tem certeza que deseja adicionar todas as cartas desse set à sua coleção?',
+    true,
+    () => adicionarSet(true), // onConfirm
+    () => console.log('Usuário cancelou adicionar set.') // onCancel
+  );
 }
 
+
 async function adicionarSetCompletoWishlist() {
-  await adicionarSet(false, true);
+  const setId = document.getElementById('set').value;
+  if (!setId) {
+    showPopup('Selecione um set antes de adicionar na wishlist.');
+    return;
+  }
+
+  showPopup(
+    'Tem certeza que deseja adicionar o set inteiro na wishlist?',
+    true,
+    () => adicionarSet(false, true), // onConfirm
+    () => console.log('Usuário cancelou adicionar set na wishlist.') // onCancel
+  );
 }
 
 async function adicionarSet(confirmar = true, isWishlist = false) {

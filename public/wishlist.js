@@ -16,6 +16,7 @@ async function initPage() {
   atualizarContadorWishlist(usuarioId);
   registrarEventoBusca();
   registrarEventoExcluirSelecionadas();
+  registrarEventoMandarSelecionadas();
 }
 
 async function fetchJson(url, options = {}) {
@@ -154,6 +155,43 @@ function registrarEventoExcluirSelecionadas() {
     );
   });
 }
+
+function registrarEventoMandarSelecionadas() {
+  const btn = document.getElementById('btn-mandar-selecionadas');
+  btn.addEventListener('click', () => {
+    if (cartasSelecionadas.size === 0) {
+      showPopup('Nenhuma carta selecionada para enviar à dashboard.');
+      return;
+    }
+
+    showPopup(
+      `Quer mesmo mover ${cartasSelecionadas.size} carta(s) selecionada(s) da wishlist para a dashboard?`,
+      true,
+      async () => {
+        try {
+          // Faz PATCH em todas as cartas selecionadas pra wishlist: false
+          for (const cartaId of cartasSelecionadas) {
+            await fetchJson(`/api/cartas/${cartaId}/wishlist`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ usuario_id: usuarioId, wishlist: false }),
+            });
+          }
+          showPopup(`${cartasSelecionadas.size} carta(s) movida(s) para a dashboard.`);
+          // Atualiza cache e interface
+          cartasCache = cartasCache.filter(carta => !cartasSelecionadas.has(carta.id.toString()));
+          cartasSelecionadas.clear();
+          carregarWishlist(usuarioId, document.getElementById('busca').value);
+          atualizarContadorWishlist(usuarioId);
+        } catch (e) {
+          console.error('Erro ao mover cartas:', e);
+          showPopup('Falha ao mover cartas. Tente novamente.');
+        }
+      }
+    );
+  });
+}
+
 
 function removerDaWishlist(cartaId) {
   showPopup(

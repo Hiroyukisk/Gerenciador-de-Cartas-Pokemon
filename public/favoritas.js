@@ -56,6 +56,8 @@ async function carregarCartasFavoritas(usuarioId) {
     `;
     container.appendChild(cardDiv);
   });
+
+  filtrarCartas(); // Aplica o filtro atual após carregar
 }
 
 function expandirArte(src) {
@@ -117,9 +119,13 @@ function showPopup(message, hasCancel = false, onConfirm = null) {
   cancelButton.onclick = () => overlay.classList.add('hidden');
 }
 
-document.getElementById('busca').addEventListener('input', e => {
-  const filtro = e.target.value.toLowerCase();
+// Função que filtra as cartas no DOM com base no input
+function filtrarCartas() {
+  const filtro = document.getElementById('busca').value.toLowerCase();
   document.querySelectorAll('#cartas-container > div').forEach(carta => {
     carta.classList.toggle('hidden', !carta.textContent.toLowerCase().includes(filtro));
   });
-});
+}
+
+// Registra o listener do input só uma vez no começo
+document.getElementById('busca').addEventListener('input', filtrarCartas);

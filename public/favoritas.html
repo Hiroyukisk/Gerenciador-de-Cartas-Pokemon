@@ -6,19 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Favoritas - Cartas Pokémon</title>
 
-  <!-- POPUP CUSTOMIZADO -->
-  <div id="custom-popup-overlay"
-    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
-      <p id="custom-popup-message" class="text-gray-800 text-lg"></p>
-      <div class="flex justify-center space-x-4">
-        <button id="custom-popup-ok" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ok</button>
-        <button id="custom-popup-cancel"
-          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 hidden">Não</button>
-      </div>
-    </div>
-  </div>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
 
@@ -57,6 +44,8 @@
       height: 100vh;
       overflow-y: auto;
       z-index: 1000;
+      background-color: #1f2937;
+      color: white;
     }
 
     .flex-1 {
@@ -80,6 +69,7 @@
       align-items: center;
       padding: 0 1rem;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      gap: 1rem;
     }
 
     #cartas-container {
@@ -92,7 +82,6 @@
       flex-wrap: wrap;
       gap: 1.5rem;
       justify-content: center;
-      /* espalha do início e usa toda a largura */
       align-items: flex-start;
       width: 100%;
     }
@@ -107,13 +96,14 @@
       flex-direction: column;
       overflow: hidden;
       transition: box-shadow 0.3s ease;
+      position: relative;
     }
 
     .carta-box:hover {
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
 
-    .carta-box .img-wrapper {
+    .img-wrapper {
       position: relative;
       width: 100%;
       height: 280px;
@@ -123,7 +113,7 @@
       box-sizing: border-box;
     }
 
-    .carta-box .img-wrapper img {
+    .img-wrapper img {
       width: 100%;
       height: 100%;
       object-fit: contain;
@@ -152,7 +142,7 @@
       color: #333;
     }
 
-    .carta-info .nome {
+    .nome {
       font-weight: 700;
       font-size: 1.1rem;
       margin-bottom: 6px;
@@ -162,22 +152,19 @@
       text-overflow: ellipsis;
     }
 
-    .carta-info .detalhes {
+    .detalhes {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      /* duas colunas iguais */
       grid-template-areas:
         "quantidade raridade"
         "ano idioma"
         "set set";
       gap: 8px 12px;
       justify-items: center;
-      /* centraliza cada box */
       width: 100%;
     }
 
-
-    .carta-info .detalhes span {
+    .detalhes span {
       background: #f3f4f6;
       color: #1f2937;
       padding: 6px 12px;
@@ -186,30 +173,29 @@
       text-align: center;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       min-width: 90px;
-      /* garante larguras iguais */
     }
 
-    .carta-info .detalhes span.quantidade {
+    .quantidade {
       grid-area: quantidade;
     }
 
-    .carta-info .detalhes span.raridade {
+    .raridade {
       grid-area: raridade;
     }
 
-    .carta-info .detalhes span.ano {
+    .ano {
       grid-area: ano;
     }
 
-    .carta-info .detalhes span.idioma {
+    .idioma {
       grid-area: idioma;
     }
 
-    .carta-info .detalhes span.set {
+    .set {
       grid-area: set;
     }
 
-    .carta-info .detalhes span:hover {
+    .detalhes span:hover {
       background-color: #e0e7ff;
     }
 
@@ -223,7 +209,7 @@
         height: auto;
       }
 
-      .carta-box .img-wrapper {
+      .img-wrapper {
         height: 200px;
         padding: 10px 0;
       }
@@ -268,6 +254,7 @@
   <div class="flex-1 flex flex-col">
     <header>
       <h1 class="text-xl font-semibold">Cartas Favoritas</h1>
+
       <div class="flex-grow flex justify-center mx-4">
         <div class="relative w-full max-w-md">
           <input type="text" id="busca" placeholder="Buscar cartas favoritas..."
@@ -280,6 +267,7 @@
           </svg>
         </div>
       </div>
+
       <div class="flex items-center space-x-2">
         <span id="nome-usuario" class="font-medium">Usuário</span>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24"
@@ -299,7 +287,20 @@
     <img id="img-arte-expandida" src="" alt="Arte expandida da carta" />
   </div>
 
+  <div id="custom-popup-overlay"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center space-y-4">
+      <p id="custom-popup-message" class="text-gray-800 text-lg"></p>
+      <div class="flex justify-center space-x-4">
+        <button id="custom-popup-ok" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ok</button>
+        <button id="custom-popup-cancel"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 hidden">Não</button>
+      </div>
+    </div>
+  </div>
+
   <script src="favoritas.js"></script>
+
 </body>
 
 </html>

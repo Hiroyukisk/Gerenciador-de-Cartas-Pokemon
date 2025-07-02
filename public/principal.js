@@ -294,11 +294,36 @@ async function toggleFavorita(cartaId, atualFavorita) {
       body: JSON.stringify({ usuario_id: usuarioId, favorita: novaFavorita })
     });
     if (!res.ok) throw new Error('Falha ao atualizar favorita');
-    carregarCartas(usuarioId);
+
+    // Atualiza só o card da carta no DOM, sem recarregar tudo
+    atualizarCartaFavoritaNoDOM(cartaId, novaFavorita);
+
   } catch (e) {
     console.error('Erro ao atualizar favorita:', e);
     alert('Erro ao atualizar carta favorita');
   }
+}
+
+// Função que atualiza só o botão favorita na carta no DOM
+function atualizarCartaFavoritaNoDOM(cartaId, novaFavorita) {
+  // Encontra o card no container
+  const container = document.getElementById('cartas-container');
+  // Os cards não têm ID, mas tem checkbox com data-carta-id, pega o pai (card)
+  const checkbox = container.querySelector(`.delete-checkbox[data-carta-id="${cartaId}"]`);
+  if (!checkbox) return; // se não achou, para aqui
+
+  const cardDiv = checkbox.closest('.carta-box');
+  if (!cardDiv) return;
+
+  // Atualiza o botão da estrela, que fica na div .img-wrapper > button
+  const btnFavorita = cardDiv.querySelector('.img-wrapper > button');
+  if (!btnFavorita) return;
+
+  // Atualiza o texto da estrela
+  btnFavorita.textContent = novaFavorita === 1 ? '⭐' : '☆';
+
+  // Atualiza o onclick do botão pra ter o novo estado correto (pra próxima troca)
+  btnFavorita.setAttribute('onclick', `toggleFavorita(${cartaId}, ${novaFavorita})`);
 }
 
 function animarCartas() {
